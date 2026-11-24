@@ -12,6 +12,7 @@ Resilience4j circuit breakers, MapStruct mappers, Zipkin, Prometheus/Grafana, EL
 ./scripts/demo-trace.sh       # make one purchase and see which service handled it
 ./scripts/doctor.sh           # what is installed / running?
 ```
-* **[SETUP.md](SETUP.md)** – START HERE: new computer / forgot everything / Postman testing
+* **[START.md](START.md)** – how to start everything, one service, or the frontend (and common start-up problems)
+* **[SETUP.md](SETUP.md)** – new computer / forgot everything / Postman testing
 * **[HELP.md](HELP.md)** – start, test, circuit breaker experiment, how to read the code
 * **[FLOW.md](FLOW.md)** – which request goes to which service

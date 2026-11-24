@@ -66,7 +66,7 @@ Maven cannot download libraries because Java does not trust your company's certi
 ```bash
 export MAVEN_OPTS="-Djavax.net.ssl.trustStoreType=KeychainStore"      # then run ./scripts/build.sh again
 ```
-Do **not** disable certificate checking. (Linux/Windows: import the company root certificate into the JDK `cacerts`.)
+The scripts (`build.sh`, `restart-service.sh`) also use a truststore at `~/.m2/truststore*.jks` automatically if you have one. Do **not** disable certificate checking. (Linux/Windows: import the company root certificate into the JDK `cacerts`.)
 
 ### Free ports
 `8080-8088, 8761` (services) and `3306 (MySQL), 27017 (MongoDB), 9092, 9411` (Docker).
@@ -88,7 +88,7 @@ The same for **port 27017**: use your own local MongoDB (no login needed) with `
 
 Open <http://localhost:8761> – nine services listed, all **UP**.
 
-The databases and tables are created automatically. The admin user (`admin` / `admin123`) and five demo products are created at the first start.
+The databases and tables are created automatically. The admin user (`admin` / `admin123`) and ten demo products (with photos, prices in rupees) are created at the first start when the product table is empty. How to start the services and the frontend: [START.md](START.md).
 
 ---
 
@@ -171,7 +171,7 @@ Admin requests use `{{adminToken}}`. Public requests have "No Auth".
 | API (use this) | <http://localhost:8080> |
 | Eureka (service list) | <http://localhost:8761> |
 | Zipkin (traces) | <http://localhost:9411> |
-| Admin login | `admin` / `admin123` |
+| Admin login | `admin` / `admin123` (how to give others admin rights: [ADMIN_ACCESS.md](ADMIN_ACCESS.md)) |
 | MySQL | `jdbc:mysql://localhost:3306`, user `root`, password `123456` (databases `user_db`, `product_db`, `cart_db`, `order_db`, `payment_db`, `shipping_db`, `favourite_db`) |
 | MongoDB | `mongodb://localhost:27017/audit_db` |
 | Kafka | `localhost:9092`, topic `audit-events` |
