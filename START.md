@@ -92,7 +92,31 @@ Logins: admin `admin` / `admin123` (see [ADMIN_ACCESS.md](ADMIN_ACCESS.md)); cus
 
 ---
 
-## D. Start-up problems and how the scripts now handle them
+## D. Monitoring with Grafana (optional)
+
+```bash
+docker compose --profile observability up -d prometheus grafana     # light: only the two you need
+# ./scripts/start-infra.sh --observability   would also start Elasticsearch + Logstash + Kibana (needs a lot of memory)
+```
+
+| What | Where |
+|---|---|
+| **Dashboard "E-commerce microservices overview"** | <http://localhost:3000> → login `admin` / `admin` (Grafana may ask for a new password: *Skip*) → **Dashboards** |
+| Prometheus targets (all 10 must be **UP**) | <http://localhost:9090/targets> |
+
+The dashboard is loaded automatically from `docker/grafana/provisioning/dashboards/`. It shows services up, requests per second,
+errors (4xx / 5xx), response time, busiest and slowest endpoints, JVM memory, CPU, threads, database connections, circuit breaker
+states and uptime. Use the **Service** drop-down (top left) to look at one service, and open the website or send some API calls so
+there is traffic to see. Edit the JSON file (or edit in Grafana and export) to change panels; Grafana re-reads it every 30 s.
+
+Stop: `docker compose --profile observability stop prometheus grafana`.
+
+If every target shows `down` with `406 Not Acceptable`: Prometheus 3 and the Spring Boot 4 metrics endpoint disagree about the format.
+The fix is already in `docker/prometheus/prometheus.yml` (`scrape_protocols: [PrometheusText0.0.4]`).
+
+---
+
+## E. Start-up problems and how the scripts now handle them
 
 | Problem | What was wrong | What handles it now |
 |---|---|---|

@@ -1,6 +1,9 @@
 # Scrapes the services running on the host machine (macOS/Windows Docker Desktop: host.docker.internal)
 global:
   scrape_interval: 10s
+  # Prometheus 3 otherwise asks for a format variant that the Spring Boot 4 endpoint rejects with HTTP 406
+  # ("Not Acceptable"), which marks every service as down. Plain text 0.0.4 is accepted by all of them.
+  scrape_protocols: [PrometheusText0.0.4]
 
 scrape_configs:
   - job_name: ecommerce

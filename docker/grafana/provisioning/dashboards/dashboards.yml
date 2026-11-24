@@ -1,0 +1,10 @@
+# Tells Grafana to load every *.json dashboard in this folder at start-up (and re-read it every 30 s).
+apiVersion: 1
+providers:
+  - name: ecommerce
+    type: file
+    disableDeletion: false
+    allowUiUpdates: true
+    updateIntervalSeconds: 30
+    options:
+      path: /etc/grafana/provisioning/dashboards
