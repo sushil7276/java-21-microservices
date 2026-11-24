@@ -1,0 +1,12 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: payment-service
+  config:
+    import: classpath:common-defaults.yml
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/payment_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:123456}

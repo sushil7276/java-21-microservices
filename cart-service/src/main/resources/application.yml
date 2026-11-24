@@ -1,0 +1,12 @@
+server:
+  port: 8083
+
+spring:
+  application:
+    name: cart-service
+  config:
+    import: classpath:common-defaults.yml
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/cart_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:123456}

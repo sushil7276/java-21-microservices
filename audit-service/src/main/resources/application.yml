@@ -1,0 +1,15 @@
+server:
+  port: 8088
+
+spring:
+  application:
+    name: audit-service
+  config:
+    import: classpath:common-defaults.yml
+  mongodb:
+    uri: ${MONGO_URI:mongodb://localhost:27017/audit_db}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
+    consumer:
+      group-id: audit-service
+      auto-offset-reset: earliest

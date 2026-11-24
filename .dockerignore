@@ -1,0 +1,6 @@
+**/src
+**/.idea
+logs
+.pids
+k8s
+docs

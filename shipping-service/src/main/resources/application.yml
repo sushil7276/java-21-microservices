@@ -1,0 +1,12 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: shipping-service
+  config:
+    import: classpath:common-defaults.yml
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/shipping_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:123456}

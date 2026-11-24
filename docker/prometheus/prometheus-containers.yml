@@ -1,0 +1,28 @@
+# Used by docker-compose.apps.yml (services running as containers)
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  - job_name: ecommerce
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: ['discovery-server:8761']
+        labels: { application: discovery-server }
+      - targets: ['api-gateway:8080']
+        labels: { application: api-gateway }
+      - targets: ['user-service:8081']
+        labels: { application: user-service }
+      - targets: ['product-service:8082']
+        labels: { application: product-service }
+      - targets: ['cart-service:8083']
+        labels: { application: cart-service }
+      - targets: ['order-service:8084']
+        labels: { application: order-service }
+      - targets: ['payment-service:8085']
+        labels: { application: payment-service }
+      - targets: ['shipping-service:8086']
+        labels: { application: shipping-service }
+      - targets: ['favourite-service:8087']
+        labels: { application: favourite-service }
+      - targets: ['audit-service:8088']
+        labels: { application: audit-service }

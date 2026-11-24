@@ -1,0 +1,99 @@
+### E-commerce flow through the API gateway  (IntelliJ HTTP client – run top to bottom)
+@gw = http://localhost:8080
+
+### 1. Register
+POST {{gw}}/api/auth/register
+Content-Type: application/json
+
+{ "username": "john", "email": "john@mail.com", "password": "secret123" }
+
+### 2. Login as user (stores the token)
+POST {{gw}}/api/auth/login
+Content-Type: application/json
+
+{ "username": "john", "password": "secret123" }
+
+> {% client.global.set("token", response.body.token); %}
+
+### 3. Login as admin (stores the admin token)
+POST {{gw}}/api/auth/login
+Content-Type: application/json
+
+{ "username": "admin", "password": "admin123" }
+
+> {% client.global.set("admin", response.body.token); %}
+
+### 4. Browse products (public)
+GET {{gw}}/api/products
+
+### 5. Admin creates a product
+POST {{gw}}/api/products
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{ "name": "Kindle", "description": "E-reader", "price": 129.99, "stock": 30, "category": "Tablets" }
+
+### 6. Add to favourites
+POST {{gw}}/api/favourites/1
+Authorization: Bearer {{token}}
+
+### 7. Add to cart
+POST {{gw}}/api/cart/items
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "productId": 1, "quantity": 2 }
+
+### 8. Show cart
+GET {{gw}}/api/cart
+Authorization: Bearer {{token}}
+
+### 9. Checkout (order + payment + shipment)
+POST {{gw}}/api/orders/checkout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "shippingAddress": "12 MG Road, Pune", "paymentMethod": "CARD" }
+
+> {% client.global.set("orderId", response.body.id); %}
+
+### 10. Checkout that fails at payment (add something to the cart first)
+POST {{gw}}/api/orders/checkout
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "shippingAddress": "12 MG Road, Pune", "paymentMethod": "CARD_DECLINED" }
+
+### 11. My orders / payments
+GET {{gw}}/api/orders
+Authorization: Bearer {{token}}
+
+###
+GET {{gw}}/api/payments
+Authorization: Bearer {{token}}
+
+### 12. Shipment of the order
+GET {{gw}}/api/shipments/order/{{orderId}}
+Authorization: Bearer {{token}}
+
+### 13. Admin: ship, then deliver (shipment id = 1 for the first order)
+PUT {{gw}}/api/shipments/1/status
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{ "status": "SHIPPED" }
+
+###
+PUT {{gw}}/api/shipments/1/status
+Authorization: Bearer {{admin}}
+Content-Type: application/json
+
+{ "status": "DELIVERED" }
+
+### 14. Audit trail of the order (admin, events travelled via Kafka into MongoDB)
+GET {{gw}}/api/audit?entityId={{orderId}}
+Authorization: Bearer {{admin}}
+
+### 15. Eureka registry
+GET http://localhost:8761/eureka/apps
+Accept: application/json
