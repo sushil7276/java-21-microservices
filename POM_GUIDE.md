@@ -147,27 +147,27 @@ The shared library (`common`) is the same, but its POM has **no** `spring-boot-m
 ```bash
 mvn clean install                    # build everything, install `common` into ~/.m2
 mvn -pl user-service -am package     # build one module plus what it needs (-am)
-mvn -pl common -am install           # refresh common before opening a service alone in an IDE
-mvn -pl user-service spring-boot:run # run one service
+mvn -pl common -am install           # refresh `common` + parent POM in ~/.m2 (needed before a service is built or opened on its own)
 ```
+In this project the helper scripts do this for you (`./scripts/build.sh`, `./scripts/restart-service.sh`): see [START.md](START.md#2-one-service).
 
 ## 6. Opening in IDE
 
 * **Open the root folder** (best). IDE sees all modules; `common` resolves automatically.
-* Open a single service folder: it must stay inside the repo (child finds `../pom.xml`), and `common` must be installed in `~/.m2` (`mvn -pl common -am install`).
+* Open a single service folder: it must stay inside the repo (the child finds `../pom.xml`) and `common` must be installed in `~/.m2` (section 5).
 
 ## 7. Common mistakes
 
 | Symptom | Cause / fix |
 |---|---|
 | `packaging` error / parent not found | Root forgot `<packaging>pom</packaging>`, or child `<parent>` artifactId/version doesn't match root |
-| "Could not find artifact ...:common" | `common` not installed; run `mvn -pl common -am install` |
+| "Could not find artifact ...:common", or an old `common` is used | `common` not installed or stale in `~/.m2` (section 5) |
 | Dependency "version is missing" | It isn't managed by Boot or any BOM; add it to root `<dependencyManagement>` |
 | Spring Cloud / Boot `NoSuchMethodError`, odd startup failures | Boot and Cloud train mismatch; see section 4 |
 | Child overrides a version and things break | Remove the child `<version>`; let the BOM decide |
 | Dependency in root `<dependencies>` unwanted in one module | Move it down into only the modules that need it |
 | Parent fetched from internet instead of local | `<relativePath/>` (empty) on Boot parent is correct; on **your own** parent omit it so `../pom.xml` is used |
-| Maven "PKIX path building failed" behind a corporate proxy | Add proxy CA to a truststore: `-Djavax.net.ssl.trustStore=...` in `.mvn/jvm.config` |
+| Maven "PKIX path building failed" behind a corporate proxy | See [SETUP.md](SETUP.md#3-company-network-that-re-signs-https-pkix-path-building-failed) |
 
 ## 8. Upgrading versions (what we did)
 
@@ -178,7 +178,7 @@ Edit only the root POM:
 <spring-cloud.version>2026.0.0</spring-cloud.version>
 ```
 
-Then `mvn clean install`, restart all services, run the smoke test.
+Then `./scripts/build.sh`, restart all services, run the smoke test ([TESTING.md](TESTING.md)).
 
 ## 9. Variations
 

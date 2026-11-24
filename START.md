@@ -1,131 +1,110 @@
-# START – how to run this project (all services, one service, and the frontend)
+# Start, stop, restart and monitor
 
-Short version: **infra → build → services → frontend**. Details and troubleshooting: [SETUP.md](SETUP.md).
+First time on this computer? Do [SETUP.md](SETUP.md) first. Ports and what each service needs: the table in [README.md](README.md#services).
 
-| Part | Port | What it needs |
-|---|---|---|
-| Frontend (React) | 5173 | the API gateway |
-| discovery-server (Eureka) | 8761 | nothing, start it first |
-| api-gateway | 8080 | Eureka |
-| user, product, cart, order, payment, shipping, favourite | 8081 – 8087 | Eureka + MySQL |
-| audit-service | 8088 | Eureka + MongoDB + Kafka |
-| order-service also uses | | Kafka (it publishes the audit events) |
+Start order: **infra → discovery-server → api-gateway → the other services → website.** The scripts take care of it.
 
-Infra (Docker): MySQL 3306, MongoDB 27017, Kafka 9092, Zipkin 9411. Requirements: JDK 21, Maven, Docker, Node 18+.
-
----
-
-## A. Start EVERYTHING
+## 1. Everything
 
 ```bash
-./scripts/start-infra.sh        # 1. MySQL, MongoDB, Kafka, Zipkin (Docker must be running)
-./scripts/build.sh              # 2. compile (first time, or after any code change)
-./scripts/start-services.sh     # 3. Eureka, gateway and the 8 services (1-2 minutes)
-cd frontend && npm install && npm run dev     # 4. the website -> http://localhost:5173
+./scripts/start-infra.sh        # MySQL, MongoDB, Kafka, Zipkin (Docker must be running)
+./scripts/build.sh              # only first time and after code changes
+./scripts/start-services.sh     # Eureka, gateway and the 8 services (1–2 min); ends with "gateway routes ... OK"
+cd frontend && npm run dev      # website on http://localhost:5173
 ```
 
-Open <http://localhost:8761>: nine services must be **UP**. Then <http://localhost:5173>.
-Quick check of the whole backend: `./scripts/smoke-test.sh`, but **do not run it on a database you care about**: it
-creates test users, products and orders every time (use a throw-away database for that).
+After a reboot only `start-infra.sh`, `start-services.sh` and `npm run dev` are needed (data lives in Docker volumes).
 
-### Stop everything
+**Stop**
 ```bash
-./scripts/stop-services.sh      # the 10 Java services (also ones started from IntelliJ; never touches other programs)
-docker compose down             # infra, data is kept   (down -v deletes ALL data)
-# frontend: Ctrl+C in its terminal
+./scripts/stop-services.sh      # all Java services, also ones started from IntelliJ (other programs on those ports are never touched)
+docker compose down             # infra, keeps data  (`down -v` deletes ALL data)
+# website: Ctrl+C
 ```
 
-### Next day (after a reboot)
-```bash
-./scripts/start-infra.sh && ./scripts/start-services.sh && (cd frontend && npm run dev)
-```
-No build needed unless the code changed.
+## 2. One service
 
----
-
-## B. Start ONE service
-
-Needs the infra from the table above (and Eureka for every service except `discovery-server`).
+Needs the infra, and Eureka (every service except `discovery-server`).
 
 ```bash
-./scripts/start-infra.sh                       # once
-./scripts/service.sh start discovery-server    # Eureka first
-./scripts/service.sh start api-gateway         # optional, only if you use the gateway / frontend
-./scripts/service.sh start user-service        # the one you work on
+./scripts/service.sh start discovery-server     # Eureka first
+./scripts/service.sh start api-gateway          # only if you use the website / gateway
+./scripts/service.sh start user-service         # the one you work on
 ```
-`service.sh start <name>` runs `java -jar <name>/target/<name>-1.0.0.jar` in the background, log in `logs/<name>.out`.
-Wait ~30 s until `http://localhost:<port>/actuator/health` says `UP`.
+It runs `java -jar <name>/target/<name>-1.0.0.jar` in the background (log: `logs/<name>.out`); wait until
+`http://localhost:<port>/actuator/health` says `UP`. In IntelliJ: run that module's `*Application` class.
 
-Same thing by hand: `cd user-service && java -jar target/user-service-1.0.0.jar`
-In IntelliJ: run the `*Application` class of that module (working directory = the module folder).
+**After changing code**, a running service keeps using its old jar until it is restarted:
 
-### Restart one (or more) services after changing code
 ```bash
-./scripts/restart-service.sh product-service                  # stop, rebuild (incl. `common`), start, wait until UP
-./scripts/restart-service.sh user-service product-service     # several at once
-./scripts/restart-service.sh --no-build product-service       # restart only
+./scripts/restart-service.sh product-service                 # stop, rebuild (incl. `common`), start, wait until UP
+./scripts/restart-service.sh user-service product-service    # several at once
+./scripts/restart-service.sh --no-build product-service      # restart only
 ```
-A running service keeps using the jar it started with, so rebuilding alone changes nothing until it is restarted.
-`./scripts/build.sh [service ...]` only builds. `service.sh crash <name>` kills one with `kill -9` (experiments only).
+`./scripts/build.sh [service ...]` only builds. `./scripts/service.sh crash <name>` kills a service with `kill -9` (for the circuit-breaker experiment).
 
-### Opening ONE service in its own IDE window / a team that has only one service
-The service needs the shared `common` library and the parent POM. Install them once (and after every change to `common`):
-```bash
-mvn -DskipTests -pl common -am install
-```
-Details: [POM_GUIDE.md](POM_GUIDE.md).
+**One service in its own IDE window, or a team that has only one service:** it needs the shared `common` library and the parent POM
+from `~/.m2`. Refresh them after every change to `common`: `mvn -DskipTests -pl common -am install` (`build.sh` does this too). Details: [POM_GUIDE.md](POM_GUIDE.md).
 
----
-
-## C. Start the frontend
+## 3. Website
 
 ```bash
 cd frontend
 npm install        # first time
-npm run dev        # http://localhost:5173  (proxies /api to the gateway on :8080)
+npm run dev        # proxies /api to the gateway on :8080
 ```
-If `npm install` hangs, your npm registry is unreachable: `npm install --registry https://registry.npmjs.org`.
-Gateway on another host: `VITE_GATEWAY_URL=http://host:8080 npm run dev`. Production build: `npm run build` (→ `dist/`).
+Gateway elsewhere: `VITE_GATEWAY_URL=http://host:8080 npm run dev`. Production build: `npm run build` (→ `dist/`).
 More: [frontend/README.md](frontend/README.md).
 
-Logins: admin `admin` / `admin123` (see [ADMIN_ACCESS.md](ADMIN_ACCESS.md)); customers sign up on the site.
-
----
-
-## D. Monitoring with Grafana (optional)
+## 4. Monitoring with Grafana (optional)
 
 ```bash
-docker compose --profile observability up -d prometheus grafana     # light: only the two you need
-# ./scripts/start-infra.sh --observability   would also start Elasticsearch + Logstash + Kibana (needs a lot of memory)
+docker compose --profile observability up -d prometheus grafana
+# `./scripts/start-infra.sh --observability` would also start Elasticsearch, Logstash and Kibana (needs ~6 GB for Docker)
 ```
 
 | What | Where |
 |---|---|
-| **Dashboard "E-commerce microservices overview"** | <http://localhost:3000> → login `admin` / `admin` (Grafana may ask for a new password: *Skip*) → **Dashboards** |
+| Dashboard **E-commerce microservices overview** | <http://localhost:3000/d/ecommerce-overview> (login `admin` / `admin`; if asked for a new password: *Skip*) |
 | Prometheus targets (all 10 must be **UP**) | <http://localhost:9090/targets> |
 
-The dashboard is loaded automatically from `docker/grafana/provisioning/dashboards/`. It shows services up, requests per second,
-errors (4xx / 5xx), response time, busiest and slowest endpoints, JVM memory, CPU, threads, database connections, circuit breaker
-states and uptime. Use the **Service** drop-down (top left) to look at one service, and open the website or send some API calls so
-there is traffic to see. Edit the JSON file (or edit in Grafana and export) to change panels; Grafana re-reads it every 30 s.
-
+The dashboard loads automatically from `docker/grafana/provisioning/dashboards/` and shows services up, requests per second, 4xx/5xx errors,
+response time, busiest and slowest endpoints, JVM memory, CPU, threads, database connections, circuit breakers and uptime. Use the
+**Service** drop-down for one service, and click around the website to create traffic. Grafana re-reads the JSON every 30 s.
 Stop: `docker compose --profile observability stop prometheus grafana`.
 
-If every target shows `down` with `406 Not Acceptable`: Prometheus 3 and the Spring Boot 4 metrics endpoint disagree about the format.
+Every target `down` with `406 Not Acceptable`? Prometheus 3 and the Spring Boot 4 metrics endpoint disagree about the format.
 The fix is already in `docker/prometheus/prometheus.yml` (`scrape_protocols: [PrometheusText0.0.4]`).
 
----
+## 5. Scripts
 
-## E. Start-up problems and how the scripts now handle them
+| Script | Use |
+|---|---|
+| `doctor.sh` | what is installed, built and running, and the command that fixes each problem (only looks) |
+| `start-infra.sh` | MySQL, MongoDB, Kafka, Zipkin (`--without-mysql`, `--without-mongodb`, `--observability`) |
+| `build.sh [service …]` | compile; always refreshes `common` and the parent POM in `~/.m2` first |
+| `start-services.sh` / `stop-services.sh` | all services on / off |
+| `restart-service.sh <name> …` | stop, rebuild, start, wait until UP |
+| `service.sh start\|crash <name>` | start / kill one service |
+| `smoke-test.sh`, `postman-test.sh` | automatic tests ([TESTING.md](TESTING.md)) |
+| `demo-trace.sh`, `trace.sh <id>` | follow one request through the services ([ARCHITECTURE.md](ARCHITECTURE.md#4-follow-a-request-live)) |
 
-| Problem | What was wrong | What handles it now |
-|---|---|---|
-| **503 right after a restart** | The gateway refreshed its service list every 30 s, Eureka cached answers for 30 s and the load balancer kept addresses for 35 s. | These are now 5 s / 3 s / 5 s (`registry-fetch-interval-seconds`, `response-cache-update-interval-ms`, `loadbalancer.cache.ttl` in the yml files). After a restart the gateway routes again about 10 s after the service is UP (it used to take about a minute). `start-services.sh` also waits until the gateway really routes. Those values are meant for development; for production keep Spring's defaults or tune them. |
-| **Old `common` library broke a service** (`CircuitBreakerFactory ... could not be found`) | A single service was built without `common`, so Maven used a stale copy from `~/.m2`. | `build.sh` always rebuilds and installs `common` and the parent POM first. Use `build.sh` or `restart-service.sh`, not a bare `mvn -pl <service> package`. |
-| **Maven `PKIX path building failed`** | A company proxy re-signs HTTPS and Java does not trust it. | The scripts use a truststore at `~/.m2/truststore*.jks` automatically when one exists (certificate checking stays on). Raw `mvn` calls still need `export MAVEN_OPTS="-Djavax.net.ssl.trustStore=$HOME/.m2/truststore-netskope.jks"`. |
-| **Port already in use** | `stop-services.sh` only knew its own pid files, so a service started by hand or from IntelliJ kept the port. | `stop-services.sh` now stops every service of this project on the project ports. If **another program** (not this project) holds a port, the scripts tell you which one and leave it alone. |
-| **Service still running an old jar** | A rebuilt jar is not used until the service restarts. | `start-services.sh` warns "running with an OLD jar" and names the fix: `./scripts/restart-service.sh <name>`. |
+## 6. Troubleshooting
 
-Other things: `Communications link failure` / Mongo or Kafka errors mean the infra is not running (`./scripts/start-infra.sh`, then
-`./scripts/doctor.sh`). New database columns are added automatically (`ddl-auto: update`).
-Where things are: logs `logs/<service>.out`, Eureka <http://localhost:8761>, traces Zipkin <http://localhost:9411>.
+First run `./scripts/doctor.sh`. Then check the log: `tail -50 logs/<service>.out`.
+
+| Symptom | Cause and fix |
+|---|---|
+| **503** or "No instances available" right after (re)starting a service | The gateway learns about a restarted service within about 10 s. Wait and retry. Start `discovery-server` first. |
+| `CircuitBreakerFactory … could not be found` (or another missing class from `common`) | The service was built without `common`, so Maven used an old copy from `~/.m2`. Use `build.sh` or `restart-service.sh`, or run `mvn -DskipTests -pl common -am install`. |
+| Maven `PKIX path building failed` | Company proxy; see [SETUP.md](SETUP.md#3-company-network-that-re-signs-https-pkix-path-building-failed). |
+| `Port 80xx was already in use` | An old process is still alive: `./scripts/stop-services.sh`. The scripts tell you if **another program** holds the port (they never kill it). |
+| A change is not visible after rebuilding | The service still runs its old jar. `start-services.sh` warns about this; run `./scripts/restart-service.sh <name>`. New database columns are added automatically (`ddl-auto: update`). |
+| `Communications link failure`, Mongo or Kafka errors | Infra not running: `./scripts/start-infra.sh`, then `doctor.sh`. Container problems: [docker/README.md](docker/README.md#problems). |
+| 401 even with a token | The token expired (1 hour). Log in again. |
+| Audit page is empty | Kafka was not running when the order was placed. |
+| Website: `npm install` hangs | Use `--registry https://registry.npmjs.org` ([SETUP.md](SETUP.md#3-company-network-that-re-signs-https-pkix-path-building-failed)). |
+| Start completely clean | `./scripts/stop-services.sh && docker compose down -v`, then [SETUP.md](SETUP.md#5-first-start-step-by-step) from step 2. |
+
+Why restarts are quick: Eureka, the gateway and the load balancer refresh every few seconds (development settings in the
+`application.yml` files; keep Spring's defaults or tune them for production).

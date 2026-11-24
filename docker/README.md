@@ -14,29 +14,18 @@ By default only the helpers run in Docker. The Spring Boot services run on your 
 | `ecommerce-kafka` | `apache/kafka:3.9.0` | **9092** | audit events (topic `audit-events`) | none |
 | `ecommerce-zipkin` | `openzipkin/zipkin:3` | **9411** | request tracing | none |
 
-Optional (only with `--observability`): Prometheus 9090, Grafana 3000, Elasticsearch 9200, Kibana 5601, Logstash.
+Optional: **Prometheus 9090 + Grafana 3000** (start them as described in [../START.md](../START.md#4-monitoring-with-grafana-optional)).
+`./scripts/start-infra.sh --observability` additionally starts Elasticsearch 9200, Logstash and Kibana 5601 (about 6 GB of memory; these three were not run end-to-end).
 
-MySQL uses the normal port **3306** with user `root` and password `123456`.
-MongoDB uses the normal port **27017** (no login). **Port 27017 must be free** too: if you run your own MongoDB there,
-start with `./scripts/start-infra.sh --without-mongodb` and the audit service uses yours. Both flags can be combined.
-
-**Port 3306 must be free.** If you already run your own MySQL there (a container or an installed one):
-it must accept `root` / `123456`; then start with `./scripts/start-infra.sh --without-mysql` and the services use yours.
-The services create their 7 databases themselves (`createDatabaseIfNotExist=true`).
+MySQL: port **3306**, user `root`, password `123456`. MongoDB: port **27017**, no login. Both ports must be free; to use your own MySQL or
+MongoDB instead of the containers see [../SETUP.md](../SETUP.md#4-free-ports). The services create their 7 databases themselves (`createDatabaseIfNotExist=true`).
 
 Everything is defined in `docker-compose.yml` in the project root.
 
 ## Start
 
-From the project root:
-```bash
-./scripts/start-infra.sh
-```
-- The first time Docker downloads the images (a few minutes). After that it starts in seconds.
-- The script waits until all four containers are **healthy**.
-- Optional extras: `./scripts/start-infra.sh --observability` (needs about 6 GB memory for Docker).
-
-The same thing without the script: `docker compose up -d --wait`
+`./scripts/start-infra.sh` from the project root (the same without the script: `docker compose up -d --wait`).
+The first time Docker downloads the images (a few minutes); afterwards it starts in seconds. The script waits until all four containers are **healthy**.
 
 ## Check
 
@@ -48,7 +37,7 @@ docker ps                      # 4 containers named ecommerce-*, status "healthy
 ## Look inside
 
 ```bash
-# MySQL (user root, password root)
+# MySQL (user root, password 123456)
 docker exec -it ecommerce-mysql mysql -uroot -p123456 -e "show databases;"
 docker exec -it ecommerce-mysql mysql -uroot -p123456 -e "use order_db; select id,user_id,status,total_amount from orders;"
 

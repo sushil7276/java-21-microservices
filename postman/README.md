@@ -8,13 +8,8 @@ Two files are in this folder. Both are standard Postman exports and can be impor
 | `Ecommerce-Local.postman_environment.json` | the environment: `baseUrl` and variables for tokens and ids |
 
 ## Before you start
-The system must be running, otherwise Postman shows "Could not get any response".
-From the project root:
-```bash
-./scripts/doctor.sh             # everything should be green
-# if not:  ./scripts/start-infra.sh  ->  ./scripts/build.sh  ->  ./scripts/start-services.sh
-```
-Full setup guide: [../SETUP.md](../SETUP.md)
+The system must be running ([../START.md](../START.md)), otherwise Postman shows "Could not get any response". `./scripts/doctor.sh` must be green.
+Other ways to test: [../TESTING.md](../TESTING.md).
 
 ## Import (Postman app)
 1. Open Postman and click **Import** (top left).

@@ -4,7 +4,7 @@
 #   docker compose up -d                            -> MySQL, MongoDB, Kafka, Zipkin   (minimum)
 #   docker compose --profile observability up -d    -> + Prometheus, Grafana, ELK stack
 #
-# The Spring Boot services themselves run on your machine (see scripts/ and HELP.md),
+# The Spring Boot services themselves run on your machine (see scripts/ and START.md),
 # or in containers with:  docker compose -f docker-compose.yml -f docker-compose.apps.yml up -d --build
 # MySQL : localhost:3306  user root  password 123456   (exactly what the services use by default)
 # MongoDB: localhost:27017  (no login)
