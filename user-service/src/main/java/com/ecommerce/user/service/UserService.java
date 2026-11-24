@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.ecommerce.common.exception.BadRequestException;
 import com.ecommerce.common.exception.ConflictException;
+import com.ecommerce.common.exception.ForbiddenException;
 import com.ecommerce.common.exception.NotFoundException;
 import com.ecommerce.user.entity.Role;
 import com.ecommerce.user.entity.User;
@@ -71,6 +72,10 @@ public class UserService {
     @Transactional
     public UserResponse update(Long id, UpdateUserRequest req) {
         User user = find(id);
+        // The admin login is fixed: nobody (not even the admin) can change its email or password through the API.
+        if (user.getRole() == Role.ADMIN) {
+            throw new ForbiddenException("The admin account is protected: its username, email and password cannot be changed");
+        }
         if (req.email() != null && !req.email().equals(user.getEmail())) {
             if (repository.existsByEmail(req.email())) {
                 throw new ConflictException("Email already registered: " + req.email());
@@ -85,7 +90,11 @@ public class UserService {
 
     @Transactional
     public void delete(Long id) {
-        repository.delete(find(id));
+        User user = find(id);
+        if (user.getRole() == Role.ADMIN) {
+            throw new ForbiddenException("Admin accounts cannot be deleted");
+        }
+        repository.delete(user);
     }
 
     private User find(Long id) {

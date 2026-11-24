@@ -16,7 +16,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 public class ProductClient {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ProductDto(Long id, String name, String description, BigDecimal price, Integer stock, String category) {
+    public record ProductDto(Long id, String name, String description, BigDecimal price, Integer stock, String category,
+                             String imageUrl) {
     }
 
     private final RestClient http;

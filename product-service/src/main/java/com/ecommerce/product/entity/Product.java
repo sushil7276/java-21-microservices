@@ -39,6 +39,10 @@ public class Product {
 
     private String category;
 
+    /** Link to a picture hosted elsewhere (we store only the URL, never the image itself). */
+    @Column(length = 2000)
+    private String imageUrl;
+
     @Column(nullable = false)
     private Instant createdAt;
 }

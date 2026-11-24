@@ -14,6 +14,8 @@ eureka:
   server:
     enable-self-preservation: false
     eviction-interval-timer-in-ms: 5000
+    use-read-only-response-cache: false     # default true: answers were cached for 30 s
+    response-cache-update-interval-ms: 3000
 
 management:
   endpoints:

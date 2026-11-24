@@ -7,6 +7,9 @@ spring:
   reactor:
     context-propagation: auto
   cloud:
+    loadbalancer:
+      cache:
+        ttl: 5s            # default 35 s
     gateway:
       server:
         webflux:
@@ -70,6 +73,7 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+    registry-fetch-interval-seconds: 5      # default 30: a restarted service becomes routable in ~5 s instead of ~30-60 s
   instance:
     prefer-ip-address: true
 

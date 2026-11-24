@@ -8,6 +8,9 @@ spring:
         # RestClient itself (2 s connect, 5 s read - see LoadBalancedClientConfig).
         disable-thread-pool: true
         disable-time-limiter: true
+    loadbalancer:
+      cache:
+        ttl: 5s            # default 35 s: after a restart, calls kept going to the old (dead) address for that long
   jpa:
     open-in-view: false
     hibernate:
@@ -17,8 +20,11 @@ eureka:
   client:
     service-url:
       defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}
+    registry-fetch-interval-seconds: 5      # default 30: how often a service refreshes its list of other services
   instance:
     prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 5    # default 30: heartbeat
+    lease-expiration-duration-in-seconds: 15
 
 management:
   endpoints:
