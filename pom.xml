@@ -34,6 +34,7 @@
         <module>shipping-service</module>
         <module>favourite-service</module>
         <module>audit-service</module>
+        <module>batch-service</module>
     </modules>
 
     <dependencyManagement>

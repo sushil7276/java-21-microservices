@@ -1,7 +1,7 @@
 # Novashop website (frontend)
 
 React 18 + Redux Toolkit (RTK Query) + Tailwind CSS: the shop and the admin panel. It talks only to the API gateway (`:8080`).
-How to run it: [START.md](../START.md#3-website). Logins and what an admin can do: [ADMIN_ACCESS.md](../ADMIN_ACCESS.md).
+How to run it: [02-running.md](../docs/02-running.md#3-website). Logins and what an admin can do: [05-security-and-admin.md](../docs/05-security-and-admin.md).
 
 ## Configuration
 
@@ -35,7 +35,7 @@ src/
   image address (right-click a picture → "Copy image address"). A product without a link, or with a link that fails to load, shows a category gradient tile. No image file is ever uploaded or stored.
 - **Cart:** the API can only add (increment) or remove a line, so "set quantity" is remove + add.
 - **Checkout:** a declined payment returns `402` with the order as the body; the website shows that order with a red banner. The payment method **"Card that gets declined"** triggers it.
-- **Sessions:** tokens last 1 hour; a `401` on any authenticated call signs the user out.
+- **Sessions:** a `401` on any authenticated call signs the user out ([rules](../docs/05-security-and-admin.md#3-sessions)); a `429` shows a "too many requests" message.
 - **Access:** admin-only routes are guarded in the website and enforced by the gateway.
 - **Feedback:** there are no pop-up notifications. Messages appear where the action happens (inline banners such as "password changed" or errors), and the screen updates itself (cart badge, totals, lists).
   Password fields have an eye button to show or hide what you type.

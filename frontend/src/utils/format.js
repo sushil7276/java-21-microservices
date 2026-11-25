@@ -21,6 +21,7 @@ export const formatDate = (iso, withTime = false) => {
 export const errorMessage = (err, fallback = 'Something went wrong. Please try again.') => {
   if (!err) return fallback;
   if (err.status === 'FETCH_ERROR') return 'Cannot reach the server. Is the API gateway running?';
+  if (err.status === 429) return 'Too many requests. Please wait a few seconds and try again.';
   if (err.status === 503) return 'This service is starting up or temporarily unavailable. Try again in a moment.';
   const d = err.data;
   if (d?.details && typeof d.details === 'object') {

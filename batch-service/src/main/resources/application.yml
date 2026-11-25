@@ -1,0 +1,38 @@
+server:
+  port: 8089
+
+spring:
+  application:
+    name: batch-service
+  config:
+    import: classpath:common-defaults.yml
+  datasource:
+    # batch_db holds the job history (Spring Batch tables) and the reports of this service
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/batch_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+    username: ${MYSQL_USER:root}
+    password: ${MYSQL_PASSWORD:123456}
+  batch:
+    job:
+      enabled: false          # do NOT start every job when the service starts; jobs are started by the API or the schedule
+    jdbc:
+      initialize-schema: always   # creates the Spring Batch tables (BATCH_JOB_EXECUTION ...) in batch_db if they are missing
+  sql:
+    init:
+      mode: always            # runs schema.sql: our own tables (rejected import rows, daily sales reports)
+  servlet:
+    multipart:
+      max-file-size: 5MB      # biggest CSV file that can be uploaded
+      max-request-size: 6MB
+
+batch:
+  upload-dir: ${BATCH_UPLOAD_DIR:./data/uploads}     # where uploaded CSV files are kept (relative to the module folder)
+  schedule:
+    enabled: true             # false = jobs only run when an admin starts them
+  sales-report:
+    cron: "0 15 0 * * *"      # every day at 00:15 for the day that just ended
+    zone: Asia/Kolkata        # the time zone that defines "a day"
+  cleanup:
+    cron: "0 0 3 * * *"       # every day at 03:00
+    cart-days: 14             # carts nobody changed for this many days are deleted
+    audit-days: 90            # audit events older than this are deleted
+    file-days: 7              # uploaded CSV files older than this are deleted

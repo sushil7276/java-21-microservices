@@ -1,9 +1,9 @@
-# Testing
+# 03 · Testing
 
-The system must be running first ([START.md](START.md)); `./scripts/doctor.sh` must be green.
+The system must be running first ([02-running.md](02-running.md)); `./scripts/doctor.sh` must be green.
 
 > **Tests create data.** The smoke test, the Postman collection and the curl examples register users, create products and place
-> orders. Run them against a throw-away database, or delete the leftovers afterwards, otherwise they show up in the admin panel.
+> orders. Run them against a throw-away database, or delete the leftovers afterwards (admin panel → Products / Users), otherwise they show up there.
 
 ## 1. Smoke test (one command)
 
@@ -37,15 +37,16 @@ IntelliJ: open `requests.http` and click the ▶ buttons.
 | `GET /api/cart` without a token | 401 |
 | a normal user calls `POST /api/products` | 403 (admin only) |
 | `curl $GW/internal/products/1/reduce-stock` | blocked: `/internal` URLs are never reachable from outside |
-| `PUT /api/users/1` (the admin account) | 403: the admin account is protected ([ADMIN_ACCESS.md](ADMIN_ACCESS.md)) |
+| `PUT /api/users/1` (the admin account) | 403: the admin account is protected ([05-security-and-admin.md](05-security-and-admin.md#2-the-admin-account-is-locked)) |
+| 15 wrong logins in a row | the last ones answer 429 ([06-redis-and-batch.md](06-redis-and-batch.md#4-rate-limiting-api-gateway)) |
 
-Admin: log in as `admin`, then `PUT /api/shipments/1/status` with `{"status":"SHIPPED"}` and later `"DELIVERED"`;
-`GET /api/audit?entityId=1` shows the Kafka events of order 1. Outage experiment (circuit breaker): [ARCHITECTURE.md](ARCHITECTURE.md#5-circuit-breaker).
+Admin: log in as admin, then `PUT /api/shipments/1/status` with `{"status":"SHIPPED"}` and later `"DELIVERED"`;
+`GET /api/audit?entityId=1` shows the Kafka events of order 1. Outage experiment: [04-architecture.md](04-architecture.md#5-circuit-breaker).
+Batch jobs by curl: [06-redis-and-batch.md](06-redis-and-batch.md#try-it).
 
 ## 3. Postman
 
-Import guide, variables and problems: [postman/README.md](postman/README.md). Expected result of the whole collection:
-**52 requests, 79 assertions, 0 failed**. From the terminal (needs the Postman CLI, `postman --version`):
+Import, variables, running and problems: [postman/README.md](../postman/README.md). From the terminal (needs the Postman CLI, `postman --version`):
 
 ```bash
 ./scripts/postman-test.sh
@@ -55,6 +56,7 @@ Import guide, variables and problems: [postman/README.md](postman/README.md). Ex
 
 1. Sign up, add products to the cart, check out: the order page shows the tracking number and progress.
 2. Choose the payment method **"Card that gets declined"**: the order becomes `PAYMENT FAILED`, stock is released.
-3. Log in as `admin` / `admin123`: Admin panel → Products (add a product with an image link), Orders (mark the shipment shipped, then delivered),
-   Users (reset a customer's password), Audit log.
+3. Log in as admin: Admin panel → Products (add a product with an image link), Orders (mark the shipment shipped, then delivered),
+   Users (reset a customer's password), Audit log, Batch jobs (import a CSV, make a sales report).
 4. Open the order as the customer again: the timeline has moved.
+5. Change your password in Profile: you are signed out and must log in again.

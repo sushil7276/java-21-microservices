@@ -46,6 +46,7 @@ const useAfterAuth = () => {
 };
 
 export function Login() {
+  const location = useLocation();
   const [form, setForm] = useState({ username: '', password: '' });
   const [error, setError] = useState('');
   const [login, { isLoading }] = useLoginMutation();
@@ -61,6 +62,7 @@ export function Login() {
   return (
     <Shell title="Welcome back" subtitle="Sign in to your account" footer={<>New here? <Link to="/register" className="font-semibold text-brand-600 hover:underline">Create an account</Link></>}>
       <form onSubmit={submit} className="space-y-5" noValidate={false}>
+ {location.state?.notice && !error && <div role="status" className="rounded-xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800 dark:bg-emerald-500/10 dark:text-emerald-300">{location.state.notice}</div>}
         {error && <div role="alert" className="rounded-xl bg-rose-50 px-4 py-3 text-sm text-rose-700 dark:bg-rose-500/10 dark:text-rose-300">{error}</div>}
         <div><label htmlFor="u" className="label">Username</label><input id="u" className="input" value={form.username} onChange={set('username')} required autoComplete="username" autoFocus /></div>
         <div><label htmlFor="p" className="label">Password</label><PasswordInput id="p" value={form.password} onChange={set('password')} autoComplete="current-password" required /></div>

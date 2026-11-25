@@ -42,7 +42,7 @@ echo "1/2 discovery-server"
 start discovery-server 8761
 wait_up http://localhost:8761/actuator/health
 
-echo "2/2 gateway + business services"
+echo "2/2 gateway + business services + batch-service"
 start api-gateway 8080
 start user-service 8081
 start product-service 8082
@@ -52,8 +52,9 @@ start payment-service 8085
 start shipping-service 8086
 start favourite-service 8087
 start audit-service 8088
+start batch-service 8089
 
-for p in 8080 8081 8082 8083 8084 8085 8086 8087 8088; do
+for p in 8080 8081 8082 8083 8084 8085 8086 8087 8088 8089; do
   wait_up http://localhost:$p/actuator/health && echo "  :$p UP"
 done
 # the gateway only routes to a service once it has fetched the registry (a few seconds): wait until it really does

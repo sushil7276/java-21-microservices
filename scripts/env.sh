@@ -11,13 +11,13 @@ if [[ "${MAVEN_OPTS:-}" != *trustStore* ]]; then
 fi
 
 # --- 2. The services and their ports -------------------------------------------------------------------------
-SERVICES="discovery-server api-gateway user-service product-service cart-service order-service payment-service shipping-service favourite-service audit-service"
+SERVICES="discovery-server api-gateway user-service product-service cart-service order-service payment-service shipping-service favourite-service audit-service batch-service"
 
 port_of() {   # service name -> port (empty for an unknown name)
   case $1 in
     discovery-server) echo 8761;; api-gateway) echo 8080;; user-service) echo 8081;; product-service) echo 8082;;
     cart-service) echo 8083;; order-service) echo 8084;; payment-service) echo 8085;; shipping-service) echo 8086;;
-    favourite-service) echo 8087;; audit-service) echo 8088;; *) echo "";;
+    favourite-service) echo 8087;; audit-service) echo 8088;; batch-service) echo 8089;; *) echo "";;
   esac
 }
 

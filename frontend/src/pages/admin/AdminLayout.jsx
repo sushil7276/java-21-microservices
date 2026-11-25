@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
-import { Boxes, History, LayoutDashboard, ReceiptText, Users } from 'lucide-react';
+import { Boxes, Cog, History, LayoutDashboard, ReceiptText, Users } from 'lucide-react';
 
 const LINKS = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/admin/products', label: 'Products', icon: Boxes },
   { to: '/admin/orders', label: 'Orders', icon: ReceiptText },
   { to: '/admin/users', label: 'Users', icon: Users },
+  { to: '/admin/batch', label: 'Batch jobs', icon: Cog },
   { to: '/admin/audit', label: 'Audit log', icon: History },
 ];
 

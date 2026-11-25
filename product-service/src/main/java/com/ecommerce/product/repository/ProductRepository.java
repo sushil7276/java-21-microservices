@@ -15,6 +15,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     List<Product> findByNameContainingIgnoreCase(String name);
 
+    boolean existsByNameIgnoreCase(String name);
+
     /** Atomic decrement - returns 0 when there is not enough stock (no overselling under concurrency). */
     @Modifying(clearAutomatically = true)
     @Query("update Product p set p.stock = p.stock - :qty where p.id = :id and p.stock >= :qty")

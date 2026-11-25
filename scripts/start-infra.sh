@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Starts MySQL, MongoDB, Kafka and Zipkin in Docker and waits until they are healthy.
+# Starts MySQL, MongoDB, Kafka, Redis and Zipkin in Docker and waits until they are healthy.
 #   ./scripts/start-infra.sh                  everything (MySQL on localhost:3306, root / 123456)
 #   ./scripts/start-infra.sh --without-mysql  you already run your own MySQL on localhost:3306 (root / 123456)
 #   ./scripts/start-infra.sh --without-mongodb you already run your own MongoDB on localhost:27017 (no login)
 #   ./scripts/start-infra.sh --observability  also Prometheus, Grafana and the ELK stack
 set -euo pipefail
 cd "$(dirname "$0")/.."
-SERVICES="mysql mongodb kafka zipkin"
+SERVICES="mysql mongodb kafka redis zipkin"
 PROFILE=()
 for arg in "$@"; do
   case $arg in

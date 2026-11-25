@@ -20,6 +20,7 @@ import com.ecommerce.user.dto.Dtos.TokenResponse;
 import com.ecommerce.user.dto.Dtos.UpdateUserRequest;
 import com.ecommerce.user.dto.Dtos.UserResponse;
 import com.ecommerce.user.mapper.UserMapper;
+import com.ecommerce.user.security.TokenVersionService;
 import com.ecommerce.user.repository.UserRepository;
 
 @Service
@@ -28,12 +29,14 @@ public class UserService {
     private final UserRepository repository;
     private final JwtService jwtService;
     private final UserMapper mapper;
+    private final TokenVersionService tokenVersions;
     private final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
-    public UserService(UserRepository repository, JwtService jwtService, UserMapper mapper) {
+    public UserService(UserRepository repository, JwtService jwtService, UserMapper mapper, TokenVersionService tokenVersions) {
         this.repository = repository;
         this.jwtService = jwtService;
         this.mapper = mapper;
+        this.tokenVersions = tokenVersions;
     }
 
     @Transactional
@@ -84,6 +87,7 @@ public class UserService {
         }
         if (req.password() != null) {
             user.setPassword(passwordEncoder.encode(req.password()));
+            tokenVersions.revokeAll(id);        // the old password may be in the wrong hands: end every login of this user
         }
         return mapper.toResponse(user);
     }
@@ -95,6 +99,7 @@ public class UserService {
             throw new ForbiddenException("Admin accounts cannot be deleted");
         }
         repository.delete(user);
+        tokenVersions.revokeAll(id);            // a deleted user must not stay logged in
     }
 
     private User find(Long id) {

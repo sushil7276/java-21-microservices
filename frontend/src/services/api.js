@@ -25,7 +25,7 @@ const inv = (...tags) => (_r, _e) => tags;
 export const api = createApi({
   reducerPath: 'api',
   baseQuery,
-  tagTypes: ['Product', 'Cart', 'Favourite', 'Order', 'User', 'Shipment', 'Payment', 'Audit'],
+  tagTypes: ['Product', 'Cart', 'Favourite', 'Order', 'User', 'Shipment', 'Payment', 'Audit', 'Batch'],
   endpoints: (b) => ({
     // ---- auth & users ----
     login: b.mutation({ query: (body) => ({ url: '/auth/login', method: 'POST', body }) }),
@@ -109,6 +109,24 @@ export const api = createApi({
       invalidatesTags: ['Shipment', 'Order'],
     }),
 
+    // ---- batch jobs (admin): CSV import, daily sales report, clean-up ----
+    getBatchJobs: b.query({ query: (limit = 20) => `/batch/jobs?limit=${limit}`, providesTags: ['Batch'] }),
+    getBatchJob: b.query({ query: (id) => `/batch/jobs/${id}` }),            // polled by the page while a job runs
+    getSalesReports: b.query({ query: (days = 30) => `/batch/reports/sales?days=${days}`, providesTags: ['Batch'] }),
+    importProducts: b.mutation({
+      query: (file) => {
+        const body = new FormData();
+        body.append('file', file);                                           // the browser sets the multipart header itself
+        return { url: '/batch/imports/products', method: 'POST', body };
+      },
+      invalidatesTags: ['Batch'],
+    }),
+    runSalesReport: b.mutation({
+      query: (date) => ({ url: '/batch/reports/sales/run', method: 'POST', params: { date: date || undefined } }),
+      invalidatesTags: ['Batch'],
+    }),
+    runCleanup: b.mutation({ query: () => ({ url: '/batch/cleanup/run', method: 'POST' }), invalidatesTags: ['Batch'] }),
+
     // ---- audit (admin) ----
     getAudit: b.query({
       query: ({ eventType, source, entityId } = {}) => ({
@@ -128,4 +146,5 @@ export const {
   useCheckoutMutation, useGetOrdersQuery, useGetAllOrdersQuery, useGetOrderQuery,
   useGetPaymentsQuery, useGetPaymentsForOrderQuery, useGetShipmentForOrderQuery, useTrackShipmentQuery, useUpdateShipmentStatusMutation,
   useGetAuditQuery,
+  useGetBatchJobsQuery, useGetBatchJobQuery, useGetSalesReportsQuery, useImportProductsMutation, useRunSalesReportMutation, useRunCleanupMutation,
 } = api;

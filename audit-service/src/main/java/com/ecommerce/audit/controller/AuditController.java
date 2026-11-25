@@ -1,7 +1,11 @@
 package com.ecommerce.audit.controller;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +22,12 @@ public class AuditController {
 
     public AuditController(AuditLogRepository repository) {
         this.repository = repository;
+    }
+
+    /** Called by batch-service (clean-up job): deletes audit events older than {@code days} days. */
+    @DeleteMapping("/internal/audit/old")
+    public Map<String, Long> deleteOld(@RequestParam(defaultValue = "90") int days) {
+        return Map.of("deleted", repository.deleteByReceivedAtBefore(Instant.now().minus(Duration.ofDays(days))));
     }
 
     @GetMapping("/api/audit")

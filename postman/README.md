@@ -8,8 +8,8 @@ Two files are in this folder. Both are standard Postman exports and can be impor
 | `Ecommerce-Local.postman_environment.json` | the environment: `baseUrl` and variables for tokens and ids |
 
 ## Before you start
-The system must be running ([../START.md](../START.md)), otherwise Postman shows "Could not get any response". `./scripts/doctor.sh` must be green.
-Other ways to test: [../TESTING.md](../TESTING.md).
+The system must be running ([../docs/02-running.md](../docs/02-running.md)), otherwise Postman shows "Could not get any response". `./scripts/doctor.sh` must be green.
+Other ways to test: [../docs/03-testing.md](../docs/03-testing.md).
 
 ## Import (Postman app)
 1. Open Postman and click **Import** (top left).
@@ -49,7 +49,7 @@ Tokens expire after 1 hour: run the two login requests again.
 ## See which services handled a request
 1. Run **CHECKOUT** in folder 5.
 2. Open the **Headers** tab of the response and copy the value of `X-Trace-Id`.
-3. In a terminal, from the project root: `./scripts/trace.sh <that-id>`
+3. Follow it through the services: [../docs/04-architecture.md](../docs/04-architecture.md#4-follow-a-request-live)
 
 ## Run from the terminal (no app needed)
 ```bash

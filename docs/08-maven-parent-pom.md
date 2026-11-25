@@ -149,7 +149,7 @@ mvn clean install                    # build everything, install `common` into ~
 mvn -pl user-service -am package     # build one module plus what it needs (-am)
 mvn -pl common -am install           # refresh `common` + parent POM in ~/.m2 (needed before a service is built or opened on its own)
 ```
-In this project the helper scripts do this for you (`./scripts/build.sh`, `./scripts/restart-service.sh`): see [START.md](START.md#2-one-service).
+In this project the helper scripts do this for you (`./scripts/build.sh`, `./scripts/restart-service.sh`): see [02-running.md](02-running.md#2-one-service).
 
 ## 6. Opening in IDE
 
@@ -167,7 +167,7 @@ In this project the helper scripts do this for you (`./scripts/build.sh`, `./scr
 | Child overrides a version and things break | Remove the child `<version>`; let the BOM decide |
 | Dependency in root `<dependencies>` unwanted in one module | Move it down into only the modules that need it |
 | Parent fetched from internet instead of local | `<relativePath/>` (empty) on Boot parent is correct; on **your own** parent omit it so `../pom.xml` is used |
-| Maven "PKIX path building failed" behind a corporate proxy | See [SETUP.md](SETUP.md#3-company-network-that-re-signs-https-pkix-path-building-failed) |
+| Maven "PKIX path building failed" behind a corporate proxy | See [01-setup.md](01-setup.md#3-company-network-that-re-signs-https-pkix-path-building-failed) |
 
 ## 8. Upgrading versions (what we did)
 
@@ -178,7 +178,7 @@ Edit only the root POM:
 <spring-cloud.version>2026.0.0</spring-cloud.version>
 ```
 
-Then `./scripts/build.sh`, restart all services, run the smoke test ([TESTING.md](TESTING.md)).
+Then `./scripts/build.sh`, restart all services, run the smoke test ([03-testing.md](03-testing.md)).
 
 ## 9. Variations
 

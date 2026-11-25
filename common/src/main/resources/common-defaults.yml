@@ -11,6 +11,11 @@ spring:
     loadbalancer:
       cache:
         ttl: 5s            # default 35 s: after a restart, calls kept going to the old (dead) address for that long
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s          # a call to Redis that takes longer than this fails (and the service carries on without Redis)
   jpa:
     open-in-view: false
     hibernate:

@@ -1,14 +1,16 @@
 import { useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { CheckCircle2, Lock, ShieldCheck } from 'lucide-react';
-import { useGetMeQuery, useUpdateUserMutation } from '../services/api';
-import { setUser } from '../features/auth/authSlice';
+import { api, useGetMeQuery, useUpdateUserMutation } from '../services/api';
+import { logout, setUser } from '../features/auth/authSlice';
 import PasswordInput from '../components/PasswordInput';
 import { PageHeader, PageLoader, Spinner, StatusBadge } from '../components/ui';
 import { errorMessage, formatDate } from '../utils/format';
 
 export default function Profile() {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { data: me, isLoading } = useGetMeQuery();
   const [update, { isLoading: saving }] = useUpdateUserMutation();
   const [email, setEmail] = useState('');
@@ -31,6 +33,14 @@ export default function Profile() {
     if (!body.email && !body.password) { setError('You have not changed anything yet.'); return; }
     try {
       const updated = await update(body).unwrap();
+      if (body.password) {
+        // Changing the password revokes every login token of this user (in Redis), including this one:
+        // sign out here and ask for the new password.
+        dispatch(logout());
+        dispatch(api.util.resetApiState());
+        navigate('/login', { replace: true, state: { notice: 'Your password was changed. Please sign in with your new password.' } });
+        return;
+      }
       dispatch(setUser(updated));
       setPassword('');
       // say exactly what changed

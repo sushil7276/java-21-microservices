@@ -1,13 +1,14 @@
 # ---------------------------------------------------------------------------
 # Infrastructure for the e-commerce microservices.
 #
-#   docker compose up -d                            -> MySQL, MongoDB, Kafka, Zipkin   (minimum)
+#   docker compose up -d                            -> MySQL, MongoDB, Kafka, Redis, Zipkin   (minimum)
 #   docker compose --profile observability up -d    -> + Prometheus, Grafana, ELK stack
 #
-# The Spring Boot services themselves run on your machine (see scripts/ and START.md),
+# The Spring Boot services themselves run on your machine (see scripts/ and docs/02-running.md),
 # or in containers with:  docker compose -f docker-compose.yml -f docker-compose.apps.yml up -d --build
 # MySQL : localhost:3306  user root  password 123456   (exactly what the services use by default)
 # MongoDB: localhost:27017  (no login)
+# Redis  : localhost:6379   (no password)  carts, product cache, token revocation, rate limiting
 # Already have your own MySQL / MongoDB?  ./scripts/start-infra.sh --without-mysql  and/or  --without-mongodb
 # ---------------------------------------------------------------------------
 name: ecommerce
@@ -63,6 +64,22 @@ services:
       test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
       interval: 10s
       timeout: 10s
+      retries: 20
+
+  # Redis: in-memory store. Used for the product cache, shopping carts, login-token revocation and gateway rate limiting.
+  # appendonly = also write every change to disk, so carts survive a restart of the container.
+  redis:
+    image: redis:7.4-alpine
+    container_name: ecommerce-redis
+    command: ["redis-server", "--appendonly", "yes"]
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
       retries: 20
 
   zipkin:
@@ -136,4 +153,5 @@ services:
 volumes:
   mysql-data:
   mongo-data:
+  redis-data:
   es-data:

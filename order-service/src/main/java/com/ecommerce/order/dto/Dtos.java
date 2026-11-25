@@ -22,6 +22,10 @@ public final class Dtos {
     public record OrderItemResponse(Long productId, String productName, BigDecimal unitPrice, Integer quantity) {
     }
 
+    /** One page of orders for the sales report. {@code last} is true when there is no further page. */
+    public record OrdersPage(List<OrderResponse> content, boolean last) {
+    }
+
     public record OrderResponse(Long id, Long userId, String customerName, OrderStatus status,
                                 BigDecimal totalAmount, String shippingAddress, String paymentMethod,
                                 String paymentTransactionId, String trackingNumber, String failureReason,

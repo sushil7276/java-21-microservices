@@ -23,6 +23,7 @@ const AdminProducts = lazy(() => import('./pages/admin/AdminProducts'));
 const AdminOrders = lazy(() => import('./pages/admin/AdminOrders'));
 const AdminUsers = lazy(() => import('./pages/admin/AdminUsers'));
 const AdminAudit = lazy(() => import('./pages/admin/AdminAudit'));
+const AdminBatch = lazy(() => import('./pages/admin/AdminBatch'));
 
 export default function App() {
   return (
@@ -54,6 +55,7 @@ export default function App() {
               <Route path="orders" element={<AdminOrders />} />
               <Route path="orders/:id" element={<OrderDetail />} />
               <Route path="users" element={<AdminUsers />} />
+              <Route path="batch" element={<AdminBatch />} />
               <Route path="audit" element={<AdminAudit />} />
             </Route>
           </Route>

@@ -30,15 +30,15 @@ if docker inspect ecommerce-mysql >/dev/null 2>&1; then
 else warn "bundled MySQL container not used (fine if you run your own MySQL)"; fi
 echo; echo "   MongoDB (localhost:27017)"
 if (echo > /dev/tcp/127.0.0.1/27017) 2>/dev/null; then ok "something listens on port 27017"; else bad "nothing on port 27017  -> ./scripts/start-infra.sh  (or start your own MongoDB)"; fi
-echo; echo "   Other containers (Kafka 9092, Zipkin 9411)"
-for c in ecommerce-kafka ecommerce-zipkin; do
+echo; echo "   Other containers (Kafka 9092, Redis 6379, Zipkin 9411)"
+for c in ecommerce-kafka ecommerce-redis ecommerce-zipkin; do
   s=$(docker inspect -f '{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}' $c 2>/dev/null)
   [[ "$s" == running* ]] && ok "$c ($s)" || bad "$c not running  -> ./scripts/start-infra.sh"
 done
 
 echo; echo "4. Services"
 for e in discovery-server:8761 api-gateway:8080 user-service:8081 product-service:8082 cart-service:8083 \
-         order-service:8084 payment-service:8085 shipping-service:8086 favourite-service:8087 audit-service:8088; do
+         order-service:8084 payment-service:8085 shipping-service:8086 favourite-service:8087 audit-service:8088 batch-service:8089; do
   name=${e%%:*}; port=${e##*:}
   st=$(curl -s -m 2 http://localhost:$port/actuator/health | sed -n 's/.*"status":"\([A-Z_]*\)".*/\1/p' | tail -1)
   [[ "$st" == "UP" ]] && ok "$name :$port UP" || bad "$name :$port not running  -> ./scripts/start-services.sh"

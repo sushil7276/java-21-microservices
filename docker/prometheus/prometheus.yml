@@ -29,3 +29,5 @@ scrape_configs:
         labels: { application: favourite-service }
       - targets: ['host.docker.internal:8088']
         labels: { application: audit-service }
+      - targets: ['host.docker.internal:8089']
+        labels: { application: batch-service }

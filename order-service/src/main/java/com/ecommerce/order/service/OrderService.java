@@ -8,6 +8,9 @@ import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.common.exception.BadRequestException;
@@ -29,6 +32,7 @@ import com.ecommerce.order.client.UserClient;
 import com.ecommerce.order.client.UserClient.UserDto;
 import com.ecommerce.order.dto.Dtos.CheckoutRequest;
 import com.ecommerce.order.dto.Dtos.OrderResponse;
+import com.ecommerce.order.dto.Dtos.OrdersPage;
 import com.ecommerce.order.entity.CustomerOrder;
 import com.ecommerce.order.entity.OrderStatus;
 import com.ecommerce.order.mapper.OrderMapper;
@@ -185,6 +189,17 @@ public class OrderService {
 
     public List<OrderResponse> listForUser(Long userId) {
         return repository.findByUserIdOrderByCreatedAtDesc(userId).stream().map(mapper::toResponse).toList();
+    }
+
+    /**
+     * Orders that count as sales (paid, shipped or delivered) created in [from, to), one page at a time.
+     * Used by the daily sales report batch job, which reads page after page instead of everything at once.
+     */
+    public OrdersPage salesPage(Instant from, Instant to, int page, int size) {
+        Page<CustomerOrder> result = repository.findByStatusInAndCreatedAtGreaterThanEqualAndCreatedAtLessThan(
+                List.of(OrderStatus.PAID, OrderStatus.SHIPPED, OrderStatus.DELIVERED), from, to,
+                PageRequest.of(page, size, Sort.by("id")));
+        return new OrdersPage(result.getContent().stream().map(mapper::toResponse).toList(), result.isLast());
     }
 
     public List<OrderResponse> listAll() {

@@ -16,6 +16,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.stereotype.Service;
 
 import com.ecommerce.user.entity.User;
+import com.ecommerce.user.security.TokenVersionService;
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
 
 /** Issues HS256 signed JWTs. The API gateway validates them with the same shared secret. */
@@ -24,12 +25,15 @@ public class JwtService {
 
     private final JwtEncoder encoder;
     private final long expirationSeconds;
+    private final TokenVersionService tokenVersions;
 
     public JwtService(@Value("${app.jwt.secret}") String secret,
-                      @Value("${app.jwt.expiration-seconds:3600}") long expirationSeconds) {
+                      @Value("${app.jwt.expiration-seconds:3600}") long expirationSeconds,
+                      TokenVersionService tokenVersions) {
         SecretKey key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
         this.encoder = new NimbusJwtEncoder(new ImmutableSecret<>(key));
         this.expirationSeconds = expirationSeconds;
+        this.tokenVersions = tokenVersions;
     }
 
     public String generate(User user) {
@@ -41,6 +45,7 @@ public class JwtService {
                 .expiresAt(now.plusSeconds(expirationSeconds))
                 .claim("uid", user.getId())
                 .claim("role", user.getRole().name())
+                .claim("ver", tokenVersions.current(user.getId()))   // token version: see TokenVersionService
                 .build();
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();
         return encoder.encode(JwtEncoderParameters.from(header, claims)).getTokenValue();

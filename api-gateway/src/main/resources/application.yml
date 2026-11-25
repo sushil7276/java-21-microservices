@@ -6,6 +6,11 @@ spring:
     name: api-gateway
   reactor:
     context-propagation: auto
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s
   cloud:
     loadbalancer:
       cache:
@@ -19,55 +24,124 @@ spring:
                 allowedOrigins: "*"
                 allowedMethods: "*"
                 allowedHeaders: "*"
+          # REDIS RATE LIMITING: every route below has a "RequestRateLimiter" filter. Redis counts the requests of each caller
+          #   replenishRate = how many requests per second a caller may do on average
+          #   burstCapacity = how many requests it may do at once (a short burst)
+          # Too many requests -> the gateway answers HTTP 429 and does not even call the service.
+          # (The key resolvers, i.e. WHO is counted, are in RateLimitConfig.java)
           routes:
+            # login + register: counted per IP address and much stricter, so passwords cannot be guessed quickly
+            - id: auth
+              uri: lb://user-service
+              predicates:
+                - Path=/api/auth/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@clientIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 2
+                    redis-rate-limiter.burstCapacity: 10
+                - CircuitBreaker=user-service-breaker,forward:/fallback/user-service
+            # everything else: counted per logged-in user (or per IP address for guests)
             - id: user-service
               uri: lb://user-service
               predicates:
-                - Path=/api/auth/**,/api/users/**
+                - Path=/api/users/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=user-service-breaker,forward:/fallback/user-service
             - id: product-service
               uri: lb://product-service
               predicates:
                 - Path=/api/products/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=product-service-breaker,forward:/fallback/product-service
             - id: cart-service
               uri: lb://cart-service
               predicates:
                 - Path=/api/cart/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=cart-service-breaker,forward:/fallback/cart-service
             - id: order-service
               uri: lb://order-service
               predicates:
                 - Path=/api/orders/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=order-service-breaker,forward:/fallback/order-service
             - id: payment-service
               uri: lb://payment-service
               predicates:
                 - Path=/api/payments/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=payment-service-breaker,forward:/fallback/payment-service
             - id: shipping-service
               uri: lb://shipping-service
               predicates:
                 - Path=/api/shipments/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=shipping-service-breaker,forward:/fallback/shipping-service
             - id: favourite-service
               uri: lb://favourite-service
               predicates:
                 - Path=/api/favourites/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=favourite-service-breaker,forward:/fallback/favourite-service
             - id: audit-service
               uri: lb://audit-service
               predicates:
                 - Path=/api/audit/**
               filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
                 - CircuitBreaker=audit-service-breaker,forward:/fallback/audit-service
+            - id: batch-service
+              uri: lb://batch-service
+              predicates:
+                - Path=/api/batch/**
+              filters:
+                - name: RequestRateLimiter
+                  args:
+                    key-resolver: "#{@userOrIpKeyResolver}"
+                    redis-rate-limiter.replenishRate: 20
+                    redis-rate-limiter.burstCapacity: 40
+                - CircuitBreaker=batch-service-breaker,forward:/fallback/batch-service
 
 eureka:
   client:

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.ecommerce.product.dto.ProductResponse;
+import com.ecommerce.product.dto.BulkResult;
 import com.ecommerce.product.dto.ProductRequest;
 import com.ecommerce.product.service.ProductService;
 
@@ -58,6 +59,12 @@ public class ProductController {
     }
 
     // ---- internal endpoints used by order-service (not routed through the gateway) ----
+
+    /** Called by batch-service (CSV import job): creates a whole chunk of products in one call. */
+    @PostMapping("/internal/products/bulk")
+    public BulkResult bulkCreate(@RequestBody List<ProductRequest> requests) {
+        return service.bulkCreate(requests);
+    }
 
     @PostMapping("/internal/products/{id}/reduce-stock")
     public ProductResponse reduceStock(@PathVariable Long id, @RequestParam int quantity) {

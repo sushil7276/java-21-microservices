@@ -2,7 +2,7 @@
   "info": {
     "name": "Ecommerce Microservices",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "description": "End-to-end tests through the API gateway (http://localhost:8080).\n\nHOW TO RUN: import this file AND Ecommerce-Local.postman_environment.json, select the environment 'Ecommerce Local' (top right), then right-click the collection -> Run collection (keep the folder order). Everything is chained with variables, so run folders 0 to 9 in order.\n\nPrerequisite: infrastructure and all services are running (see SETUP.md)."
+    "description": "End-to-end tests through the API gateway (http://localhost:8080).\n\nHOW TO RUN: import this file AND Ecommerce-Local.postman_environment.json, select the environment 'Ecommerce Local' (top right), then right-click the collection -> Run collection (keep the folder order). Everything is chained with variables, so run folders 0 to 9 in order.\n\nPrerequisite: infrastructure and all services are running (see docs/01-setup.md)."
   },
   "auth": {
     "type": "bearer",
@@ -53,7 +53,7 @@
           ]
         },
         {
-          "name": "Eureka - registered services (9 expected)",
+          "name": "Eureka - registered services (10 expected)",
           "request": {
             "method": "GET",
             "header": [
@@ -83,7 +83,7 @@
                 "type": "text/javascript",
                 "exec": [
                   "pm.test(\"Status is 200\", function () { pm.response.to.have.status(200); });",
-                  "pm.test(\"9 services registered\", () => pm.expect(pm.response.json().applications.application.length).to.eql(9));"
+                  "pm.test(\"10 services registered\", () => pm.expect(pm.response.json().applications.application.length).to.eql(10));"
                 ]
               }
             }

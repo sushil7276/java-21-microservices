@@ -1,10 +1,12 @@
 package com.ecommerce.order.controller;
 
+import java.time.Instant;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -17,6 +19,7 @@ import com.ecommerce.common.web.Headers;
 import com.ecommerce.order.entity.OrderStatus;
 import com.ecommerce.order.dto.Dtos.CheckoutRequest;
 import com.ecommerce.order.dto.Dtos.OrderResponse;
+import com.ecommerce.order.dto.Dtos.OrdersPage;
 import com.ecommerce.order.dto.Dtos.UpdateStatusRequest;
 import com.ecommerce.order.service.OrderService;
 
@@ -61,6 +64,13 @@ public class OrderController {
     }
 
     /** Service-to-service: shipping-service reports SHIPPED / DELIVERED. */
+    /** Called by batch-service (daily sales report): one page of paid orders created in [from, to). */
+    @GetMapping("/internal/orders/sales")
+    public OrdersPage sales(@RequestParam Instant from, @RequestParam Instant to,
+                            @RequestParam(defaultValue = "0") int page, @RequestParam(defaultValue = "50") int size) {
+        return service.salesPage(from, to, page, size);
+    }
+
     @PutMapping("/internal/orders/{id}/status")
     public OrderResponse updateStatus(@PathVariable Long id, @Valid @RequestBody UpdateStatusRequest request) {
         return service.updateStatus(id, request.status());

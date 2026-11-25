@@ -8,6 +8,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.ReactiveStringRedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
@@ -46,6 +47,7 @@ public class SecurityConfig {
                         .pathMatchers(HttpMethod.DELETE, "/api/users/**").hasRole("ADMIN")
                         .pathMatchers(HttpMethod.PUT, "/api/shipments/*/status").hasRole("ADMIN")
                         .pathMatchers("/api/audit/**").hasRole("ADMIN")
+                        .pathMatchers("/api/batch/**").hasRole("ADMIN")
                         // everything else needs a valid token
                         .anyExchange().authenticated())
                 .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(jwtConverter())))
@@ -53,9 +55,11 @@ public class SecurityConfig {
     }
 
     @Bean
-    ReactiveJwtDecoder jwtDecoder(@Value("${app.jwt.secret}") String secret) {
+    ReactiveJwtDecoder jwtDecoder(@Value("${app.jwt.secret}") String secret, ReactiveStringRedisTemplate redis) {
         SecretKey key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-        return NimbusReactiveJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
+        ReactiveJwtDecoder signatureCheck = NimbusReactiveJwtDecoder.withSecretKey(key).macAlgorithm(MacAlgorithm.HS256).build();
+        // after the signature is OK, Redis is asked whether the token was revoked (password changed / user deleted)
+        return new RevocationCheckingJwtDecoder(signatureCheck, redis);
     }
 
     private ReactiveJwtAuthenticationConverterAdapter jwtConverter() {
