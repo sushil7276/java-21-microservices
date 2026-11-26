@@ -20,7 +20,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
  * It talks to the other services only through their APIs (client/), never to their databases.
  * Its own database (batch_db) holds the job history and the reports.
  */
-@SpringBootApplication(scanBasePackages = {"com.ecommerce.batch", "com.ecommerce.common"})
+@SpringBootApplication
 @EnableScheduling
 public class BatchApplication {
 

@@ -6,9 +6,9 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
-import com.ecommerce.common.exception.ConflictException;
-import com.ecommerce.common.exception.NotFoundException;
-import com.ecommerce.common.resilience.ResilientCaller;
+import com.ecommerce.order.exception.ConflictException;
+import com.ecommerce.order.exception.NotFoundException;
+import com.ecommerce.order.resilience.ResilientCaller;
 
 /** order-service ===> product-service : take stock out / put it back. */
 @Component

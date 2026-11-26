@@ -24,7 +24,7 @@ for n in "${names[@]}"; do
   fi
 done
 
-# 2. build (always refreshes `common` first, see build.sh)
+# 2. build (see build.sh)
 if [[ $BUILD -eq 1 ]]; then ./scripts/build.sh "${names[@]}" || { echo "BUILD FAILED, services are stopped; fix the error and run this again"; exit 1; }; fi
 
 # 3. start

@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.common.exception.ForbiddenException;
-import com.ecommerce.common.web.Headers;
+import com.ecommerce.user.exception.ForbiddenException;
+import com.ecommerce.user.web.Headers;
 import com.ecommerce.user.dto.Dtos.UpdateUserRequest;
 import com.ecommerce.user.dto.Dtos.UserResponse;
 import com.ecommerce.user.service.UserService;

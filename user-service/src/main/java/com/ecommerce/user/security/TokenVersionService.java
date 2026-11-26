@@ -7,7 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import com.ecommerce.common.security.TokenVersionKeys;
+import com.ecommerce.user.security.TokenVersionKeys;
 
 /**
  * REDIS TOKEN REVOCATION

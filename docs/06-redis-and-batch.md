@@ -47,7 +47,7 @@ docker exec ecommerce-redis redis-cli hgetall ecommerce:cart:2
 
 | | |
 |---|---|
-| Code | `user-service/.../security/TokenVersionService.java`, `JwtService.java` (claim `ver`), `api-gateway/.../RevocationCheckingJwtDecoder.java`, `common/.../TokenVersionKeys.java` |
+| Code | `user-service/.../security/TokenVersionService.java`, `JwtService.java` (claim `ver`), `api-gateway/.../RevocationCheckingJwtDecoder.java`, `user-service/.../security/TokenVersionKeys.java` (the gateway repeats the key prefix) |
 | How | Login puts the current version in the token. The gateway compares it with `ecommerce:token-version:<userId>` on every request. Changing a password (or an admin resetting it, or deleting the user) raises the version, so all old tokens stop working at once. |
 
 ```bash

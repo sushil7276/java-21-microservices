@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.common.exception.ForbiddenException;
-import com.ecommerce.common.web.Headers;
+import com.ecommerce.order.exception.ForbiddenException;
+import com.ecommerce.order.web.Headers;
 import com.ecommerce.order.entity.OrderStatus;
 import com.ecommerce.order.dto.Dtos.CheckoutRequest;
 import com.ecommerce.order.dto.Dtos.OrderResponse;

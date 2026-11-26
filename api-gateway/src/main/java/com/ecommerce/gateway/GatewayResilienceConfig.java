@@ -13,7 +13,7 @@ import io.github.resilience4j.timelimiter.TimeLimiterConfig;
 
 /**
  * Circuit breaker of the gateway: one breaker per route (see application.yml, filter "CircuitBreaker").
- * Same idea as in the services (see ResilienceConfig in the common module):
+ * Same idea as in the services (see ResilienceConfig in cart-service, order-service ...):
  * 50% failures of the last 10 calls -> OPEN for 10 s -> 2 test calls -> CLOSED again.
  * The time limiter gives a service 10 s to answer before the gateway gives up.
  */

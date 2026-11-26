@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.ecommerce.common.event.AuditEvent;
+import com.ecommerce.order.event.AuditEvent;
 
 import tools.jackson.databind.json.JsonMapper;
 

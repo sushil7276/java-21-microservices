@@ -3,7 +3,7 @@ package com.ecommerce.audit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication(scanBasePackages = {"com.ecommerce.audit", "com.ecommerce.common"})
+@SpringBootApplication
 public class AuditApplication {
     public static void main(String[] args) {
         SpringApplication.run(AuditApplication.class, args);

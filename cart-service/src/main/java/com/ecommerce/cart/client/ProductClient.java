@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
-import com.ecommerce.common.exception.NotFoundException;
-import com.ecommerce.common.resilience.ResilientCaller;
+import com.ecommerce.cart.exception.NotFoundException;
+import com.ecommerce.cart.resilience.ResilientCaller;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**

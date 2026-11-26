@@ -14,8 +14,8 @@ import com.ecommerce.cart.dto.Dtos.CartItemResponse;
 import com.ecommerce.cart.dto.Dtos.CartResponse;
 import com.ecommerce.cart.store.CartLine;
 import com.ecommerce.cart.store.CartStore;
-import com.ecommerce.common.exception.ConflictException;
-import com.ecommerce.common.exception.NotFoundException;
+import com.ecommerce.cart.exception.ConflictException;
+import com.ecommerce.cart.exception.NotFoundException;
 
 /** The cart logic. The carts themselves are kept in Redis (see {@link CartStore}). */
 @Service

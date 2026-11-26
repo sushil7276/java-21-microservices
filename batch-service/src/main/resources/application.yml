@@ -1,38 +1,107 @@
+# ============================================================================================================
+# batch-service - configuration. Everything this service needs is in THIS file (there is no shared config).
+#
+# How to read  ${NAME:default} :  "use the environment variable NAME if it exists, otherwise use default".
+#   Example:  ${MYSQL_USER:root}  ->  user "root", unless you start the service with  MYSQL_USER=bob
+# So on your own computer you change nothing: the defaults match the Docker containers (see docs/07-infrastructure.md).
+# ============================================================================================================
+
+# ---- 1. Web server ---
 server:
-  port: 8089
+  port: 8089                      # the port this service listens on
 
 spring:
   application:
-    name: batch-service
-  config:
-    import: classpath:common-defaults.yml
+    name: batch-service               # the name other services use to find it (Eureka), also shown in logs and Grafana
+
+  # ---- 2. Database (MySQL): batch_db holds the job history and the reports ---
   datasource:
-    # batch_db holds the job history (Spring Batch tables) and the reports of this service
+    # jdbc:mysql://<host>:<port>/<database>   - the database is created automatically (createDatabaseIfNotExist=true)
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/batch_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:123456}
+    username: ${MYSQL_USER:root}          # the MySQL user  (default root, same as the Docker container)
+    password: ${MYSQL_PASSWORD:123456}    # the MySQL password (default 123456, same as the Docker container)
+
+  # ---- 3. JPA (not used for Spring Batch's own tables; kept so the settings match the other services)
+  #        / Hibernate / Hibernate (turns Java entity classes into tables) ----------------------------------------
+  jpa:
+    open-in-view: false             # do not keep a database connection open while the JSON answer is written
+    hibernate:
+      ddl-auto: update              # create/alter the tables to match the entity classes. Fine for learning;
+                                    # in production use "validate" and migration scripts (Flyway/Liquibase)
+
+  # ---- Spring Batch ---
   batch:
     job:
-      enabled: false          # do NOT start every job when the service starts; jobs are started by the API or the schedule
+      enabled: false                # do NOT start every job when the service starts; jobs are started by the API or the schedule
     jdbc:
-      initialize-schema: always   # creates the Spring Batch tables (BATCH_JOB_EXECUTION ...) in batch_db if they are missing
+      initialize-schema: always     # creates the Spring Batch tables (BATCH_JOB_EXECUTION ...) in batch_db if they are missing
   sql:
     init:
-      mode: always            # runs schema.sql: our own tables (rejected import rows, daily sales reports)
+      mode: always                  # runs schema.sql: our own tables (rejected import rows, daily sales reports)
   servlet:
     multipart:
-      max-file-size: 5MB      # biggest CSV file that can be uploaded
+      max-file-size: 5MB            # biggest CSV file that can be uploaded
       max-request-size: 6MB
 
+  # ---- Calling other services (circuit breaker + load balancer) ---
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        # Run the protected call on the SAME thread (no thread-pool hop), so the tracing id (traceId) stays with it.
+        # Time-outs are done by the RestClient itself (2 s connect, 5 s read - see config/LoadBalancedClientConfig.java).
+        # The circuit breaker numbers (10 calls, 50 %, ...) are in resilience/ResilienceConfig.java.
+        disable-thread-pool: true
+        disable-time-limiter: true
+    loadbalancer:
+      cache:
+        ttl: 5s                     # how long the "where is service X?" answer is remembered (Spring default 35 s;
+                                    # short, so a restarted service is found again quickly)
+
+# ---- Eureka: register this service so the others (and the gateway) can find it by name ---
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}   # where Eureka (discovery-server) runs
+    registry-fetch-interval-seconds: 5        # how often we refresh our list of other services (default 30)
+  instance:
+    prefer-ip-address: true                   # register with the IP address instead of the computer name
+    lease-renewal-interval-in-seconds: 5      # heartbeat: "I am still alive" every 5 s (default 30)
+    lease-expiration-duration-in-seconds: 15  # Eureka forgets us after 15 s without a heartbeat
+
+# ---- Monitoring: health check, Prometheus metrics, Zipkin tracing ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics   # /actuator/health, /actuator/prometheus ... (Grafana reads these)
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0                        # trace 100 % of the requests (fine for learning)
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+
+# ---- Logging ---
+logging:
+  file:
+    name: ${LOG_DIR:../logs}/${spring.application.name}.log   # a JSON log file, also readable with scripts/trace.sh
+  structured:
+    format:
+      file: logstash                          # JSON lines, picked up by Logstash -> Elasticsearch -> Kibana (optional)
+
+# ---- This service's own settings (read with @Value in JobService and the job classes) ---
 batch:
-  upload-dir: ${BATCH_UPLOAD_DIR:./data/uploads}     # where uploaded CSV files are kept (relative to the module folder)
+  upload-dir: ${BATCH_UPLOAD_DIR:./data/uploads}   # where uploaded CSV files are kept (relative to the module folder)
   schedule:
-    enabled: true             # false = jobs only run when an admin starts them
+    enabled: true                 # false = jobs only run when an admin starts them
   sales-report:
-    cron: "0 15 0 * * *"      # every day at 00:15 for the day that just ended
-    zone: Asia/Kolkata        # the time zone that defines "a day"
+    cron: "0 15 0 * * *"          # every day at 00:15 for the day that just ended
+    zone: Asia/Kolkata            # the time zone that defines "a day"
   cleanup:
-    cron: "0 0 3 * * *"       # every day at 03:00
-    cart-days: 14             # carts nobody changed for this many days are deleted
-    audit-days: 90            # audit events older than this are deleted
-    file-days: 7              # uploaded CSV files older than this are deleted
+    cron: "0 0 3 * * *"           # every day at 03:00
+    cart-days: 14                 # carts nobody changed for this many days are deleted
+    audit-days: 90                # audit events older than this are deleted
+    file-days: 7                  # uploaded CSV files older than this are deleted

@@ -44,7 +44,7 @@ Ports must be free first (list: [README](../README.md#services) and [07-infrastr
 |---|---|---|---|
 | 1 | `./scripts/doctor.sh` | checks tools (only looks, changes nothing) | no red `MISSING` in section 1 |
 | 2 | `./scripts/start-infra.sh` | pulls images (2–5 min the first time), starts the containers | all containers `healthy` |
-| 3 | `./scripts/build.sh` | downloads libraries, compiles 12 modules (3–5 min the first time) | `BUILD SUCCESS` |
+| 3 | `./scripts/build.sh` | downloads libraries, compiles 11 modules (3–5 min the first time) | `BUILD SUCCESS` |
 | 4 | `./scripts/start-services.sh` | starts Eureka, then everything else | `:8080 UP` … `:8089 UP`, then `gateway routes to the services ... OK` |
 | 5 | `./scripts/doctor.sh` | everything green | sections 3 and 4 all `OK` |
 | 6 | `cd frontend && npm install && npm run dev` | starts the website | <http://localhost:5173> |

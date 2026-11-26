@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
-import com.ecommerce.common.exception.ConflictException;
-import com.ecommerce.common.resilience.ResilientCaller;
+import com.ecommerce.shipping.exception.ConflictException;
+import com.ecommerce.shipping.resilience.ResilientCaller;
 
 /** shipping-service ===> order-service : "the parcel was shipped / delivered, update the order". */
 @Component

@@ -17,8 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.ecommerce.batch.report.SalesReportRepository;
 import com.ecommerce.batch.report.SalesReportRepository.DailyReport;
 import com.ecommerce.batch.service.JobService;
-import com.ecommerce.common.exception.ForbiddenException;
-import com.ecommerce.common.web.Headers;
+import com.ecommerce.batch.exception.ForbiddenException;
+import com.ecommerce.batch.web.Headers;
 
 /**
  * The API of the batch service. Everything here is for the ADMIN only (the gateway also enforces this; the check

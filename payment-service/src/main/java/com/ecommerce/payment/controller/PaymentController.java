@@ -9,8 +9,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.common.exception.ForbiddenException;
-import com.ecommerce.common.web.Headers;
+import com.ecommerce.payment.exception.ForbiddenException;
+import com.ecommerce.payment.web.Headers;
 import com.ecommerce.payment.dto.PaymentResponse;
 import com.ecommerce.payment.dto.PaymentRequest;
 import com.ecommerce.payment.service.PaymentService;

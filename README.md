@@ -76,7 +76,7 @@ Every service except Eureka also needs Eureka running. Docker helpers and their 
 | manage the admin account, rights and sessions | [docs/05-security-and-admin.md](docs/05-security-and-admin.md) |
 | learn how Redis and Spring Batch are used | [docs/06-redis-and-batch.md](docs/06-redis-and-batch.md) |
 | look inside the Docker containers and databases | [docs/07-infrastructure.md](docs/07-infrastructure.md) |
-| reuse the Maven parent-POM setup in another project | [docs/08-maven-parent-pom.md](docs/08-maven-parent-pom.md) |
+| understand the `pom.xml` files and change versions | [docs/08-maven-poms.md](docs/08-maven-poms.md) |
 | import the Postman collection | [postman/README.md](postman/README.md) |
 | work on the website code | [frontend/README.md](frontend/README.md) |
 

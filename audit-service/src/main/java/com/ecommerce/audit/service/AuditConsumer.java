@@ -7,7 +7,7 @@ import org.springframework.stereotype.Component;
 
 import com.ecommerce.audit.mapper.AuditMapper;
 import com.ecommerce.audit.repository.AuditLogRepository;
-import com.ecommerce.common.event.AuditEvent;
+import com.ecommerce.audit.event.AuditEvent;
 
 import tools.jackson.databind.json.JsonMapper;
 

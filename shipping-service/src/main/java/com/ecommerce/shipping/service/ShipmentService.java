@@ -6,8 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ecommerce.common.exception.ConflictException;
-import com.ecommerce.common.exception.NotFoundException;
+import com.ecommerce.shipping.exception.ConflictException;
+import com.ecommerce.shipping.exception.NotFoundException;
 import com.ecommerce.shipping.client.OrderClient;
 import com.ecommerce.shipping.entity.Shipment;
 import com.ecommerce.shipping.entity.ShipmentStatus;

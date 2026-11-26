@@ -1,17 +1,85 @@
+# ============================================================================================================
+# order-service - configuration. Everything this service needs is in THIS file (there is no shared config).
+#
+# How to read  ${NAME:default} :  "use the environment variable NAME if it exists, otherwise use default".
+#   Example:  ${MYSQL_USER:root}  ->  user "root", unless you start the service with  MYSQL_USER=bob
+# So on your own computer you change nothing: the defaults match the Docker containers (see docs/07-infrastructure.md).
+# ============================================================================================================
+
+# ---- 1. Web server ---
 server:
-  port: 8084
+  port: 8084                      # the port this service listens on
 
 spring:
   application:
-    name: order-service
-  config:
-    import: classpath:common-defaults.yml
+    name: order-service               # the name other services use to find it (Eureka), also shown in logs and Grafana
+
+  # ---- 2. Database (MySQL) ---
   datasource:
+    # jdbc:mysql://<host>:<port>/<database>   - the database is created automatically (createDatabaseIfNotExist=true)
     url: jdbc:mysql://${MYSQL_HOST:localhost}:${MYSQL_PORT:3306}/order_db?createDatabaseIfNotExist=true&allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
-    username: ${MYSQL_USER:root}
-    password: ${MYSQL_PASSWORD:123456}
+    username: ${MYSQL_USER:root}          # the MySQL user  (default root, same as the Docker container)
+    password: ${MYSQL_PASSWORD:123456}    # the MySQL password (default 123456, same as the Docker container)
+
+  # ---- 3. JPA / Hibernate (turns Java entity classes into tables) ---
+  jpa:
+    open-in-view: false             # do not keep a database connection open while the JSON answer is written
+    hibernate:
+      ddl-auto: update              # create/alter the tables to match the entity classes. Fine for learning;
+                                    # in production use "validate" and migration scripts (Flyway/Liquibase)
+
+  # ---- Kafka: this service SENDS audit events (see audit/AuditPublisher.java) ---
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     producer:
       properties:
-        max.block.ms: 3000      # never hang an API call because Kafka is down
+        max.block.ms: 3000          # never hang an API call for long because Kafka is down
+
+  # ---- Calling other services (circuit breaker + load balancer) ---
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        # Run the protected call on the SAME thread (no thread-pool hop), so the tracing id (traceId) stays with it.
+        # Time-outs are done by the RestClient itself (2 s connect, 5 s read - see config/LoadBalancedClientConfig.java).
+        # The circuit breaker numbers (10 calls, 50 %, ...) are in resilience/ResilienceConfig.java.
+        disable-thread-pool: true
+        disable-time-limiter: true
+    loadbalancer:
+      cache:
+        ttl: 5s                     # how long the "where is service X?" answer is remembered (Spring default 35 s;
+                                    # short, so a restarted service is found again quickly)
+
+# ---- Eureka: register this service so the others (and the gateway) can find it by name ---
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}   # where Eureka (discovery-server) runs
+    registry-fetch-interval-seconds: 5        # how often we refresh our list of other services (default 30)
+  instance:
+    prefer-ip-address: true                   # register with the IP address instead of the computer name
+    lease-renewal-interval-in-seconds: 5      # heartbeat: "I am still alive" every 5 s (default 30)
+    lease-expiration-duration-in-seconds: 15  # Eureka forgets us after 15 s without a heartbeat
+
+# ---- Monitoring: health check, Prometheus metrics, Zipkin tracing ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics   # /actuator/health, /actuator/prometheus ... (Grafana reads these)
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0                        # trace 100 % of the requests (fine for learning)
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+
+# ---- Logging ---
+logging:
+  file:
+    name: ${LOG_DIR:../logs}/${spring.application.name}.log   # a JSON log file, also readable with scripts/trace.sh
+  structured:
+    format:
+      file: logstash                          # JSON lines, picked up by Logstash -> Elasticsearch -> Kibana (optional)

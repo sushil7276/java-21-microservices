@@ -1,15 +1,61 @@
+# ============================================================================================================
+# audit-service - configuration. Everything this service needs is in THIS file (there is no shared config).
+#
+# How to read  ${NAME:default} :  "use the environment variable NAME if it exists, otherwise use default".
+#   Example:  ${MYSQL_USER:root}  ->  user "root", unless you start the service with  MYSQL_USER=bob
+# So on your own computer you change nothing: the defaults match the Docker containers (see docs/07-infrastructure.md).
+# ============================================================================================================
+
+# ---- 1. Web server ---
 server:
-  port: 8088
+  port: 8088                      # the port this service listens on
 
 spring:
   application:
-    name: audit-service
-  config:
-    import: classpath:common-defaults.yml
+    name: audit-service               # the name other services use to find it (Eureka), also shown in logs and Grafana
+
+  # ---- Database (MongoDB): the audit events are stored here ---
   mongodb:
     uri: ${MONGO_URI:mongodb://localhost:27017/audit_db}
+
+  # ---- Kafka: this service RECEIVES the audit events (see service/AuditConsumer.java) ---
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP:localhost:9092}
     consumer:
       group-id: audit-service
-      auto-offset-reset: earliest
+      auto-offset-reset: earliest   # a new consumer starts from the oldest message it has not seen
+
+# ---- Eureka: register this service so the others (and the gateway) can find it by name ---
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}   # where Eureka (discovery-server) runs
+    registry-fetch-interval-seconds: 5        # how often we refresh our list of other services (default 30)
+  instance:
+    prefer-ip-address: true                   # register with the IP address instead of the computer name
+    lease-renewal-interval-in-seconds: 5      # heartbeat: "I am still alive" every 5 s (default 30)
+    lease-expiration-duration-in-seconds: 15  # Eureka forgets us after 15 s without a heartbeat
+
+# ---- Monitoring: health check, Prometheus metrics, Zipkin tracing ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics   # /actuator/health, /actuator/prometheus ... (Grafana reads these)
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0                        # trace 100 % of the requests (fine for learning)
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+
+# ---- Logging ---
+logging:
+  file:
+    name: ${LOG_DIR:../logs}/${spring.application.name}.log   # a JSON log file, also readable with scripts/trace.sh
+  structured:
+    format:
+      file: logstash                          # JSON lines, picked up by Logstash -> Elasticsearch -> Kibana (optional)

@@ -1,9 +1,71 @@
+# ============================================================================================================
+# cart-service - configuration. Everything this service needs is in THIS file (there is no shared config).
+#
+# How to read  ${NAME:default} :  "use the environment variable NAME if it exists, otherwise use default".
+#   Example:  ${MYSQL_USER:root}  ->  user "root", unless you start the service with  MYSQL_USER=bob
+# So on your own computer you change nothing: the defaults match the Docker containers (see docs/07-infrastructure.md).
+# ============================================================================================================
+
+# ---- 1. Web server ---
 server:
-  port: 8083
+  port: 8083                      # the port this service listens on
 
 spring:
   application:
-    name: cart-service
-  config:
-    import: classpath:common-defaults.yml
-  # Redis connection (host, port) comes from common-defaults.yml; carts are stored there, see store/CartStore.java
+    name: cart-service               # the name other services use to find it (Eureka), also shown in logs and Grafana
+
+  # ---- Redis: carts are stored here (no SQL database in this service, see store/CartStore.java) ---
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2s                   # a Redis call that takes longer than this fails instead of hanging the request
+
+  # ---- Calling other services (circuit breaker + load balancer) ---
+  cloud:
+    circuitbreaker:
+      resilience4j:
+        # Run the protected call on the SAME thread (no thread-pool hop), so the tracing id (traceId) stays with it.
+        # Time-outs are done by the RestClient itself (2 s connect, 5 s read - see config/LoadBalancedClientConfig.java).
+        # The circuit breaker numbers (10 calls, 50 %, ...) are in resilience/ResilienceConfig.java.
+        disable-thread-pool: true
+        disable-time-limiter: true
+    loadbalancer:
+      cache:
+        ttl: 5s                     # how long the "where is service X?" answer is remembered (Spring default 35 s;
+                                    # short, so a restarted service is found again quickly)
+
+# ---- Eureka: register this service so the others (and the gateway) can find it by name ---
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_URL:http://localhost:8761/eureka}   # where Eureka (discovery-server) runs
+    registry-fetch-interval-seconds: 5        # how often we refresh our list of other services (default 30)
+  instance:
+    prefer-ip-address: true                   # register with the IP address instead of the computer name
+    lease-renewal-interval-in-seconds: 5      # heartbeat: "I am still alive" every 5 s (default 30)
+    lease-expiration-duration-in-seconds: 15  # Eureka forgets us after 15 s without a heartbeat
+
+# ---- Monitoring: health check, Prometheus metrics, Zipkin tracing ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics   # /actuator/health, /actuator/prometheus ... (Grafana reads these)
+  endpoint:
+    health:
+      show-details: always
+  tracing:
+    sampling:
+      probability: 1.0                        # trace 100 % of the requests (fine for learning)
+  zipkin:
+    tracing:
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
+
+# ---- Logging ---
+logging:
+  file:
+    name: ${LOG_DIR:../logs}/${spring.application.name}.log   # a JSON log file, also readable with scripts/trace.sh
+  structured:
+    format:
+      file: logstash                          # JSON lines, picked up by Logstash -> Elasticsearch -> Kibana (optional)

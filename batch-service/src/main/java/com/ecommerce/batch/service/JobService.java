@@ -38,9 +38,9 @@ import com.ecommerce.batch.imports.RejectedRowRepository;
 import com.ecommerce.batch.report.DailySalesReportJobConfig;
 import com.ecommerce.batch.web.JobSummary;
 import com.ecommerce.batch.web.JobSummary.StepSummary;
-import com.ecommerce.common.exception.BadRequestException;
-import com.ecommerce.common.exception.ConflictException;
-import com.ecommerce.common.exception.NotFoundException;
+import com.ecommerce.batch.exception.BadRequestException;
+import com.ecommerce.batch.exception.ConflictException;
+import com.ecommerce.batch.exception.NotFoundException;
 
 /**
  * Starts the jobs and describes their runs.

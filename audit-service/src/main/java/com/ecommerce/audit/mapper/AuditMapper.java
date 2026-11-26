@@ -4,7 +4,7 @@ import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 
 import com.ecommerce.audit.entity.AuditLog;
-import com.ecommerce.common.event.AuditEvent;
+import com.ecommerce.audit.event.AuditEvent;
 
 @Mapper(componentModel = "spring")
 public interface AuditMapper {

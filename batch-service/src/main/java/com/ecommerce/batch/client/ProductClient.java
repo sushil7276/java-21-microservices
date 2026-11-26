@@ -8,7 +8,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import com.ecommerce.common.resilience.ResilientCaller;
+import com.ecommerce.batch.resilience.ResilientCaller;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /** batch-service ===> product-service. "http://product-service" has no port: Eureka says where it runs. */

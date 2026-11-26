@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
-import com.ecommerce.common.event.AuditEvent;
+import com.ecommerce.order.event.AuditEvent;
 
 @Configuration
 public class KafkaTopicConfig {

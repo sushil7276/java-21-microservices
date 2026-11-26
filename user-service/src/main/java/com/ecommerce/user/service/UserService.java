@@ -8,10 +8,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.ecommerce.common.exception.BadRequestException;
-import com.ecommerce.common.exception.ConflictException;
-import com.ecommerce.common.exception.ForbiddenException;
-import com.ecommerce.common.exception.NotFoundException;
+import com.ecommerce.user.exception.BadRequestException;
+import com.ecommerce.user.exception.ConflictException;
+import com.ecommerce.user.exception.ForbiddenException;
+import com.ecommerce.user.exception.NotFoundException;
 import com.ecommerce.user.entity.Role;
 import com.ecommerce.user.entity.User;
 import com.ecommerce.user.dto.Dtos.LoginRequest;

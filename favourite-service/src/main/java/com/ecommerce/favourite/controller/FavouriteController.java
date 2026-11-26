@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.ecommerce.common.web.Headers;
+import com.ecommerce.favourite.web.Headers;
 import com.ecommerce.favourite.dto.FavouriteResponse;
 import com.ecommerce.favourite.service.FavouriteService;
 

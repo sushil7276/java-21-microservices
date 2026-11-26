@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.ecommerce.cart.dto.Dtos.AddItemRequest;
 import com.ecommerce.cart.dto.Dtos.CartResponse;
 import com.ecommerce.cart.service.CartService;
-import com.ecommerce.common.web.Headers;
+import com.ecommerce.cart.web.Headers;
 
 import jakarta.validation.Valid;
 

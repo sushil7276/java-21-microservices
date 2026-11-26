@@ -8,7 +8,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import com.ecommerce.common.resilience.ResilientCaller;
+import com.ecommerce.batch.resilience.ResilientCaller;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /** batch-service ===> order-service: reads the paid orders of a time range, one page at a time. */

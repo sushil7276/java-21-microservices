@@ -12,9 +12,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import jakarta.validation.Validator;
 
-import com.ecommerce.common.exception.BadRequestException;
-import com.ecommerce.common.exception.ConflictException;
-import com.ecommerce.common.exception.NotFoundException;
+import com.ecommerce.product.exception.BadRequestException;
+import com.ecommerce.product.exception.ConflictException;
+import com.ecommerce.product.exception.NotFoundException;
 import com.ecommerce.product.config.CacheConfig;
 import com.ecommerce.product.dto.BulkResult;
 import com.ecommerce.product.dto.ProductRequest;

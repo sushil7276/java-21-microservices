@@ -23,9 +23,8 @@ public class RevocationCheckingJwtDecoder implements ReactiveJwtDecoder {
     private static final Logger log = LoggerFactory.getLogger(RevocationCheckingJwtDecoder.class);
 
     /**
-     * Must be the same key that user-service writes: com.ecommerce.common.security.TokenVersionKeys.of(userId).
-     * (The gateway does not depend on the shared "common" library, which is built for the MVC services, so the
-     * one line is repeated here.)
+     * Must be the same key that user-service writes (see TokenVersionKeys.of(userId) in user-service).
+     * The two services do not share code, so this one line is written in both places on purpose.
      */
     private static final String KEY_PREFIX = "ecommerce:token-version:";
 

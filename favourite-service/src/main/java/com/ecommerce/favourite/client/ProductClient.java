@@ -7,8 +7,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
-import com.ecommerce.common.exception.NotFoundException;
-import com.ecommerce.common.resilience.ResilientCaller;
+import com.ecommerce.favourite.exception.NotFoundException;
+import com.ecommerce.favourite.resilience.ResilientCaller;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /** favourite-service ===> product-service : show the product details of a favourite. */

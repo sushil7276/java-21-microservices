@@ -102,7 +102,7 @@ Graphical: Zipkin <http://localhost:9411> → *Run Query* → open a trace. Numb
 
 | Where | Protects | File |
 |---|---|---|
-| every service → service call (cart, order, shipping, favourite, batch) | one breaker per target service | `common/.../resilience/ResilientCaller.java`, settings in `ResilienceConfig.java` |
+| every service → service call (cart, order, shipping, favourite, batch) | one breaker per target service | `<service>/.../resilience/ResilientCaller.java`, settings in `ResilienceConfig.java` (each of these services has its own copy) |
 | gateway → each service | one breaker per route, JSON 503 answer | `api-gateway/.../GatewayResilienceConfig.java`, `application.yml` (`CircuitBreaker=` filters), `FallbackController`, `GatewayErrorHandler` |
 
 Business answers such as *404 not found* or *409 conflict* do **not** count as failures: the other service answered correctly.
@@ -141,8 +141,8 @@ public interface UserMapper {
 ```
 Mappers (folder `mapper/` in each service): `UserMapper`, `ProductMapper` (also create / update), `OrderMapper`
 (cart line → order line), `PaymentMapper`, `ShipmentMapper`, `FavouriteMapper` (two sources), `AuditMapper` (Kafka event → MongoDB document).
-The generated code is in `<service>/target/generated-sources/annotations/.../*MapperImpl.java`. Setup: the parent `pom.xml` has `mapstruct` and
-`mapstruct-processor`, with Lombok first in the annotation-processor list ([08-maven-parent-pom.md](08-maven-parent-pom.md)).
+The generated code is in `<service>/target/generated-sources/annotations/.../*MapperImpl.java`. Setup: the `pom.xml` of the service lists `mapstruct`, and the compiler plugin runs
+`mapstruct-processor` with Lombok first ([08-maven-poms.md](08-maven-poms.md)).
 
 ## 7. Reading the code
 
@@ -159,6 +159,16 @@ client/       calls to OTHER services (one class per target, all use ResilientCa
 ```
 cart-service stores carts in Redis (`store/`) and batch-service is organised by job (`imports/`, `report/`, `cleanup/`): see [06-redis-and-batch.md](06-redis-and-batch.md).
 
-Shared code is in `common/`: the error format (`GlobalExceptionHandler`), `ResilientCaller` (circuit breaker), `RequestLogFilter` (the `<===` / `--->`
-log lines and `X-Trace-Id`), `LoadBalancedClientConfig` (how a service finds another by name) and `common-defaults.yml` (settings shared by all services;
-overridable with environment variables: [02-running.md](02-running.md#5-scripts-and-configuration)). The gateway is reactive and does **not** use `common`.
+**There is no shared library.** Each service has its own small copies of the helpers it needs, in its own packages, so you can read one service on its own:
+
+```
+exception/    NotFoundException, ConflictException ... + GlobalExceptionHandler (one JSON error format)
+logging/      RequestLogFilter (the `<===` / `--->` log lines and X-Trace-Id)
+web/          Headers (names of the X-User-Id ... headers the gateway adds)
+resilience/   ResilientCaller + ResilienceConfig (circuit breaker)            - services that call other services
+config/       LoadBalancedClientConfig (how a service finds another by name)  - services that call other services
+event/        AuditEvent (the Kafka message)                                  - order-service and audit-service
+```
+The price is some duplicated code; the gain is that nothing is hidden in another module. All settings of a service are in its own
+`application.yml` (every line explained; environment variables: [02-running.md](02-running.md#5-scripts-and-configuration)).
+The gateway is reactive and has its own code too.

@@ -7,7 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import com.ecommerce.common.exception.NotFoundException;
+import com.ecommerce.favourite.exception.NotFoundException;
 import com.ecommerce.favourite.client.ProductClient;
 import com.ecommerce.favourite.client.ProductClient.ProductDto;
 import com.ecommerce.favourite.entity.Favourite;

@@ -6,7 +6,7 @@ import org.springframework.cloud.client.loadbalancer.LoadBalanced;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
-import com.ecommerce.common.resilience.ResilientCaller;
+import com.ecommerce.order.resilience.ResilientCaller;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /** order-service ===> payment-service : charge the customer. */
