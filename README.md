@@ -1,5 +1,7 @@
 # Novashop – e-commerce microservices
 
+> **This is the base (beginner) level:** every service is self-contained, with no shared module and no root `pom.xml`. The advanced version is saved in git: [docs/09-project-levels.md](docs/09-project-levels.md).
+
 An online shop built from small Spring Boot services behind one API gateway, with a React website and an admin panel.
 
 Java 21 · Spring Boot 4.2.0 · Spring Cloud 2026.0.0 · MySQL · MongoDB · Redis · Spring Batch · Kafka · Resilience4j · MapStruct ·
@@ -77,6 +79,7 @@ Every service except Eureka also needs Eureka running. Docker helpers and their 
 | learn how Redis and Spring Batch are used | [docs/06-redis-and-batch.md](docs/06-redis-and-batch.md) |
 | look inside the Docker containers and databases | [docs/07-infrastructure.md](docs/07-infrastructure.md) |
 | understand the `pom.xml` files and change versions | [docs/08-maven-poms.md](docs/08-maven-poms.md) |
+| see the beginner base level and how to reach the advanced version (git tags) | [docs/09-project-levels.md](docs/09-project-levels.md) |
 | import the Postman collection | [postman/README.md](postman/README.md) |
 | work on the website code | [frontend/README.md](frontend/README.md) |
 
